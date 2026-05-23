@@ -1,0 +1,19 @@
+{
+  "name": "ir-schema",
+  "version": "0.1.0",
+  "description": "JSON Schema & TypeScript types for IR Visual Design & Multimedia DSL",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "test": "echo \"No tests yet\" && exit 0"
+  },
+  "keywords": ["ir", "schema", "visual", "design", "dsl"],
+  "author": "deftorch",
+  "license": "MIT",
+  "dependencies": {
+    "ajv": "^8.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
