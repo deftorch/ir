@@ -3,7 +3,7 @@ import { computeLayout } from './layout';
 import { renderWeb } from './renderer';
 
 export { computeLayout, ComputedLayout } from './layout';
-export { renderWeb, cssColor } from './renderer';
+export { renderWeb, cssColor, generateNodeCss, generateStateCss } from './renderer';
 
 /**
  * Compiles a fully resolved IRDocument into web-ready HTML/CSS.

@@ -67,7 +67,8 @@ export function createIRNode(params: Partial<IRNode> & { type: IRNodeType }): IR
     component_ref: params.component_ref,
     renderer: params.renderer,
     brand_tokens: params.brand_tokens,
-    x_debug_trace: params.x_debug_trace
+    x_debug_trace: params.x_debug_trace,
+    bindings: params.bindings
   };
 }
 

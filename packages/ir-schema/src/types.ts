@@ -192,6 +192,7 @@ export interface IRNode {
   renderer?: string;
   brand_tokens?: string[];
   x_debug_trace?: NodeDebugTrace;
+  bindings?: Record<string, string>;
 }
 
 export interface IRSemanticRule {
