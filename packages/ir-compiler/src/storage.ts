@@ -56,17 +56,12 @@ export class FileStorage {
     const parentDoc = await this.loadIR(parentIrId);
     const newIrId = generateUUID();
 
-    const forkedDoc: IRDocument = {
-      ...parentDoc,
-      meta: {
-        ...parentDoc.meta,
-        ir_id: newIrId,
-        parent_ir_id: parentIrId,
-        session_id: newSessionId,
-        created_at: new Date().toISOString(),
-        created_by: createdBy
-      }
-    };
+    const forkedDoc = JSON.parse(JSON.stringify(parentDoc)) as IRDocument;
+    forkedDoc.meta.ir_id = newIrId;
+    forkedDoc.meta.parent_ir_id = parentIrId;
+    forkedDoc.meta.session_id = newSessionId;
+    forkedDoc.meta.created_at = new Date().toISOString();
+    forkedDoc.meta.created_by = createdBy;
 
     await this.saveIR(forkedDoc);
     return forkedDoc;
