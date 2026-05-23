@@ -1,17 +1,17 @@
 # IR Visual Design & Multimedia DSL
 
-## Deskripsi Singkat
-IR (Intermediate Representation) adalah kontrak formal untuk visual design, multimedia, dan interaksi lintas domain (web, print, video, dsb). IR menjadi sumber kebenaran tunggal untuk semua surface, dengan arsitektur multi-level (HIR, MIR, LIR) dan pipeline kompilasi yang terstruktur.
+## Project Overview
+IR (Intermediate Representation) is a formal contract for visual design, multimedia, and cross-domain interaction (web, print, video, etc). IR serves as the single source of truth for all surfaces, with a multi-level architecture (HIR, MIR, LIR) and a structured compilation pipeline.
 
-## Fitur Utama
-- Mendukung 11 domain: visual, video, audio, print, interactive, dsb.
+## Key Features
+- Supports 11 domains: visual, video, audio, print, interactive, and more
 - Style system & brand token cascade (object > component > theme)
-- Constraint & semantic validation (WCAG, brand, dsb.)
+- Constraint & semantic validation (WCAG, brand, etc.)
 - Timeline & time-based media (video, motion)
-- Data binding & interaksi (state machine, event)
-- Output: Web (HTML/CSS/JS), Print (PDF), Video (FFmpeg), dsb.
+- Data binding & interaction (state machine, event)
+- Output: Web (HTML/CSS/JS), Print (PDF), Video (FFmpeg), and more
 
-## Arsitektur IR
+## IR Architecture
 ```
 DSL Source (Natural Language / Code / Canvas Action)
              ↓
@@ -24,15 +24,15 @@ LIR — Low-level IR (Platform-Specific)
 Backends: Web · Print · Video · Mobile · Audio
 ```
 
-## Status Implementasi
-Lihat [ir-implementation-plan.md](ir-implementation-plan.md) untuk roadmap detail.
-- Fase 1: Foundation & Core Schema (on progress)
-- Fase 2: Style System & Brand Tokens
-- Fase 3: Constraint & Semantic Validation
-- Fase 4: Renderer Pipeline (Web)
+## Implementation Status
+See [ir-implementation-plan.md](ir-implementation-plan.md) for the detailed roadmap.
+- Phase 1: Foundation & Core Schema (in progress)
+- Phase 2: Style System & Brand Tokens
+- Phase 3: Constraint & Semantic Validation
+- Phase 4: Renderer Pipeline (Web)
 - ...
 
-## Struktur Monorepo
+## Monorepo Structure
 ```
 /packages
   ├── ir-schema         # JSON Schema & TypeScript types
@@ -40,19 +40,19 @@ Lihat [ir-implementation-plan.md](ir-implementation-plan.md) untuk roadmap detai
   └── ir-renderer-web   # Web renderer (HTML/CSS/JS)
 ```
 
-## Cara Memulai
-1. Pastikan Node.js & pnpm/yarn/npm terinstall
-2. Masuk ke folder `packages/ir-schema` dan install dependency
+## Getting Started
+1. Ensure Node.js & pnpm/yarn/npm are installed
+2. Enter the `packages/ir-schema` folder and install dependencies
    ```bash
    cd packages/ir-schema
    npm install
    ```
-3. Jalankan test (akan tersedia setelah implementasi schema)
+3. Run tests (available after schema implementation)
    ```bash
    npm test
    ```
 
-## Contoh IRDocument (Minimal)
+## Example IRDocument (Minimal)
 ```json
 {
   "meta": {
@@ -76,19 +76,19 @@ Lihat [ir-implementation-plan.md](ir-implementation-plan.md) untuk roadmap detai
 }
 ```
 
-## Kontrak Stabilitas & Keputusan Kritis
-- Field STABLE tidak boleh breaking tanpa major version bump
-- Cascade order: object > component > theme (tidak bisa diubah)
-- Lihat [ir-specification.md](ir-specification.md) untuk detail
+## Stability Contract & Critical Decisions
+- STABLE fields cannot be breaking-changed without a major version bump
+- Cascade order: object > component > theme (cannot be changed)
+- See [ir-specification.md](ir-specification.md) for details
 
-## Kontribusi
-- Ikuti style guide & test sebelum PR
-- Tambah domain/fitur baru sesuai roadmap & diskusi
+## Contribution
+- Follow the style guide & run tests before PR
+- Add new domains/features according to the roadmap & discussion
 
-## Lisensi
-(Cantumkan lisensi di sini)
+## License
+(Add license here)
 
 ---
 
-> Dokumentasi lengkap: [ir-specification.md](ir-specification.md)
-> Roadmap & fase: [ir-implementation-plan.md](ir-implementation-plan.md)
+> Full documentation: [ir-specification.md](ir-specification.md)
+> Roadmap & phases: [ir-implementation-plan.md](ir-implementation-plan.md)
