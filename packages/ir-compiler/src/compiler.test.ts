@@ -144,4 +144,32 @@ describe('ir-compiler storage layer', () => {
     const loadedFork = await storage.loadIR(forked.meta.ir_id);
     expect(loadedFork.meta.parent_ir_id).toBe(validDoc.meta.ir_id);
   });
+
+  it('should deep clone the document to prevent shared reference mutations', async () => {
+    const docWithNested = createIRDocument({
+      domain: 'visual',
+      session_id: 'session-nested',
+      canvas: createIRCanvas({ platform: 'web', width: 800, height: 600 }),
+      objects: [
+        createIRNode({
+          id: 'text-node',
+          type: 'text',
+          properties: { content: 'parent content' }
+        })
+      ]
+    });
+
+    await storage.saveIR(docWithNested);
+
+    const forked = await storage.forkIR(docWithNested.meta.ir_id, 'session-fork-nested', 'fork');
+
+    // Mutate the forked document's nested objects and canvas properties
+    forked.canvas.width = 1024;
+    forked.objects[0].properties.content = 'forked content';
+
+    // Verify parent document loaded from storage remains unchanged
+    const parentLoaded = await storage.loadIR(docWithNested.meta.ir_id);
+    expect(parentLoaded.canvas.width).toBe(800);
+    expect(parentLoaded.objects[0].properties.content).toBe('parent content');
+  });
 });

@@ -1,6 +1,7 @@
 import Ajv, { ErrorObject } from 'ajv';
 import addFormats from 'ajv-formats';
-import { schemas, IRDocument, IRError } from 'ir-schema';
+import { schemas, IRDocument, IRError, IRNode } from 'ir-schema';
+import { evaluateExpression } from './semantic-dsl';
 
 // Initialize AJV instance and register schemas from ir-schema
 const ajv = new Ajv({
@@ -86,11 +87,119 @@ export function validateIR(doc: unknown): { valid: boolean; errors: IRError[] } 
   const isValid = docValidator(doc);
 
   if (isValid) {
-    return { valid: true, errors: [] };
+    const semanticErrors = validateSemanticRules(doc as IRDocument);
+    const hasHardErrors = semanticErrors.some((e) => e.severity === 'error');
+    return {
+      valid: !hasHardErrors,
+      errors: semanticErrors
+    };
   }
 
   const errors = (docValidator.errors || []).map(translateAjvError);
   return { valid: false, errors };
+}
+
+/**
+ * Evaluate all semantic rules in the document and return any errors.
+ */
+export function validateSemanticRules(doc: IRDocument): IRError[] {
+  const errors: IRError[] = [];
+  const rules = doc.constraints?.semantic_rules || [];
+
+  for (const rule of rules) {
+    const { id, scope, condition, violation, message } = rule;
+
+    const createError = (path: string): IRError => ({
+      code: 'semantic_rule_violation',
+      message: `${message} (Rule: ${id})`,
+      path,
+      severity: violation
+    });
+
+    try {
+      if (scope === 'document') {
+        const result = evaluateExpression(condition, {
+          canvas: doc.canvas,
+          document: doc
+        });
+        if (!result) {
+          errors.push(createError('/constraints/semantic_rules'));
+        }
+      } else if (scope === 'object') {
+        const traverse = (node: IRNode, path: string) => {
+          const result = evaluateExpression(condition, {
+            self: node,
+            canvas: doc.canvas,
+            document: doc
+          });
+          if (!result) {
+            errors.push(createError(path));
+          }
+          if (node.children) {
+            node.children.forEach((child, index) => {
+              traverse(child, `${path}/children/${index}`);
+            });
+          }
+        };
+
+        doc.objects.forEach((node, index) => {
+          traverse(node, `/objects/${index}`);
+        });
+      } else if (scope === 'parent_child') {
+        const traverse = (node: IRNode, path: string) => {
+          if (node.children) {
+            node.children.forEach((child, index) => {
+              const childPath = `${path}/children/${index}`;
+              const result = evaluateExpression(condition, {
+                self: child,
+                parent: node,
+                canvas: doc.canvas,
+                document: doc
+              });
+              if (!result) {
+                errors.push(createError(childPath));
+              }
+              traverse(child, childPath);
+            });
+          }
+        };
+
+        doc.objects.forEach((node, index) => {
+          traverse(node, `/objects/${index}`);
+        });
+      } else if (scope === 'siblings') {
+        const checkSiblings = (siblings: IRNode[], basePath: string) => {
+          siblings.forEach((node, index) => {
+            const result = evaluateExpression(condition, {
+              self: node,
+              canvas: doc.canvas,
+              document: doc
+            });
+            if (!result) {
+              errors.push(createError(`${basePath}/${index}`));
+            }
+          });
+
+          siblings.forEach((node, index) => {
+            if (node.children) {
+              checkSiblings(node.children, `${basePath}/${index}/children`);
+            }
+          });
+        };
+
+        checkSiblings(doc.objects, '/objects');
+      }
+    } catch (e: any) {
+      errors.push({
+        code: 'semantic_rule_error',
+        message: `Error evaluating rule ${id}: ${e.message}`,
+        path: '/constraints/semantic_rules',
+        severity: 'error'
+      });
+    }
+  }
+
+  return errors;
 }
 
 /**

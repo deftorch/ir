@@ -95,10 +95,28 @@ export type IRNodeType =
   | string;
 
 export interface StyleOverride {
+  fill?: ColorValue;
+  stroke?: ColorValue;
+  stroke_width?: number;
+  font_family?: string;
+  font_size?: number;
+  font_weight?: string | number;
+  line_height?: number;
+  letter_spacing?: number;
+  background_color?: ColorValue;
+  opacity?: number;
+  border_color?: ColorValue;
+  border_width?: number;
+  border_radius?: number;
   [key: string]: any;
 }
 
 export interface NodeProperties {
+  content?: string;
+  text?: string;
+  src?: string;
+  alt?: string;
+  href?: string;
   [key: string]: any;
 }
 
