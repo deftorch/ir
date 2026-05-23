@@ -169,7 +169,9 @@ export class Parser {
 
   private consume(type: TokenType, message: string): Token {
     if (this.check(type)) return this.advance();
-    throw new Error(`Parser Error: ${message} at token type ${this.peek().type} ("${this.peek().value}")`);
+    throw new Error(
+      `Parser Error: ${message} at token type ${this.peek().type} ("${this.peek().value}")`
+    );
   }
 
   public parse(): ASTNode {
@@ -239,7 +241,7 @@ export class Parser {
 
       while (true) {
         if (this.match('DOT')) {
-          const prop = this.consume('IDENTIFIER', 'Expect property name after \'.\'.').value;
+          const prop = this.consume('IDENTIFIER', "Expect property name after '.'.").value;
           expr = { type: 'MemberAccess', object: expr, property: prop };
         } else if (this.match('LPAREN')) {
           // If previous expression was MemberAccess, treat as method call
@@ -258,7 +260,9 @@ export class Parser {
               args
             };
           } else {
-            throw new Error('Parser Error: Direct function calls without an object context are not supported.');
+            throw new Error(
+              'Parser Error: Direct function calls without an object context are not supported.'
+            );
           }
         } else {
           break;
@@ -424,7 +428,9 @@ export function evaluateAST(node: ASTNode, context: EvaluationContext): any {
         if (prop === 'aspect_ratio') {
           const width = context.canvas.width;
           const height = context.canvas.height;
-          return width === 'auto' || height === 'auto' ? 1.0 : (width as number) / (height as number);
+          return width === 'auto' || height === 'auto'
+            ? 1.0
+            : (width as number) / (height as number);
         }
         return (context.canvas as any)[prop];
       }
@@ -432,7 +438,12 @@ export function evaluateAST(node: ASTNode, context: EvaluationContext): any {
       // Handle node properties
       if (obj.id && obj.type) {
         const irNode = obj as IRNode;
-        if (prop === 'fill' || prop === 'stroke' || prop === 'background_color' || prop === 'border_color') {
+        if (
+          prop === 'fill' ||
+          prop === 'stroke' ||
+          prop === 'background_color' ||
+          prop === 'border_color'
+        ) {
           return resolveNodeStyleProperty(irNode, context.document, prop);
         }
         if (prop === 'width') return irNode.size.width;
@@ -470,16 +481,26 @@ export function evaluateAST(node: ASTNode, context: EvaluationContext): any {
       const op = node.operator;
 
       switch (op) {
-        case '+': return left + right;
-        case '-': return left - right;
-        case '*': return left * right;
-        case '/': return left / right;
-        case '==': return left == right;
-        case '!=': return left != right;
-        case '<': return left < right;
-        case '>': return left > right;
-        case '<=': return left <= right;
-        case '>=': return left >= right;
+        case '+':
+          return left + right;
+        case '-':
+          return left - right;
+        case '*':
+          return left * right;
+        case '/':
+          return left / right;
+        case '==':
+          return left == right;
+        case '!=':
+          return left != right;
+        case '<':
+          return left < right;
+        case '>':
+          return left > right;
+        case '<=':
+          return left <= right;
+        case '>=':
+          return left >= right;
         default:
           throw new Error(`Evaluator Error: Unsupported binary operator "${op}"`);
       }

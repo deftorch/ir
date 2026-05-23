@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import { createIRCanvas, createIRNode, createIRDocument } from 'ir-schema';
 import {
   tokenize,
-  Parser,
   evaluateExpression,
   calculateContrastRatio,
   parseColorToRGB
