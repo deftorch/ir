@@ -131,6 +131,17 @@ const doc = createIRDocument({
           position: { x: 40, y: 310, z: 0 },
           size: { width: 520, height: 50 },
           style_ref: 'button-style',
+          transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
+          states: {
+            hover: {
+              fill: '#a6e3a1',
+              scale: { x: 1.02, y: 1.02 }
+            },
+            active: {
+              fill: '#94e2d5',
+              scale: { x: 0.98, y: 0.98 }
+            }
+          },
           children: [
             createIRNode({
               id: 'btn-text',

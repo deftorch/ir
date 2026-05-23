@@ -1,7 +1,21 @@
 import { IRDocument, IRNode } from 'ir-schema';
 import { ComputedLayout } from './layout';
 
-export function cssColor(val: any): string {
+export function cssColor(val: any, colorToVarMap?: Map<string, string>): string {
+  if (!val) return '';
+  
+  if (colorToVarMap) {
+    let lookupKey = '';
+    if (typeof val === 'string') {
+      lookupKey = val.trim().toLowerCase();
+    } else {
+      lookupKey = cssColor(val).trim().toLowerCase();
+    }
+    if (colorToVarMap.has(lookupKey)) {
+      return colorToVarMap.get(lookupKey)!;
+    }
+  }
+
   if (typeof val === 'string') return val;
   if (val && typeof val === 'object') {
     if (typeof val.r === 'number') {
@@ -41,12 +55,64 @@ export function renderNodeHtml(node: IRNode, renderChildren: (node: IRNode) => s
   }
 }
 
+export function generateStateCss(
+  nodeId: string,
+  nodeType: string,
+  stateName: string,
+  stateOverride: any,
+  doc: IRDocument,
+  colorToVarMap?: Map<string, string>
+): string {
+  let css = `#${nodeId}:${stateName} {\n`;
+  
+  if (stateOverride.fill) {
+    if (nodeType === 'text') {
+      css += `  color: ${cssColor(stateOverride.fill, colorToVarMap)};\n`;
+    } else {
+      css += `  background-color: ${cssColor(stateOverride.fill, colorToVarMap)};\n`;
+    }
+  }
+  if (stateOverride.background_color) {
+    css += `  background-color: ${cssColor(stateOverride.background_color, colorToVarMap)};\n`;
+  }
+  if (nodeType !== 'text') {
+    if (stateOverride.stroke) {
+      const width = stateOverride.stroke_width ?? 1;
+      css += `  border: ${width}px solid ${cssColor(stateOverride.stroke, colorToVarMap)};\n`;
+    } else if (stateOverride.border_color) {
+      const width = stateOverride.border_width ?? 1;
+      css += `  border: ${width}px solid ${cssColor(stateOverride.border_color, colorToVarMap)};\n`;
+    }
+  }
+  if (stateOverride.border_radius) {
+    css += `  border-radius: ${stateOverride.border_radius}px;\n`;
+  }
+  if (stateOverride.opacity !== undefined) {
+    css += `  opacity: ${stateOverride.opacity};\n`;
+  }
+  
+  let transform = '';
+  if (stateOverride.rotation !== undefined) {
+    transform += `rotate(${stateOverride.rotation}deg) `;
+  }
+  if (stateOverride.scale !== undefined) {
+    transform += `scale(${stateOverride.scale.x}, ${stateOverride.scale.y}) `;
+  }
+  if (transform) {
+    css += `  transform: ${transform.trim()};\n`;
+  }
+
+  css += `}\n`;
+  return css;
+}
+
 export function generateNodeCss(
   node: IRNode,
   layout: ComputedLayout,
   parentLayout: ComputedLayout | undefined,
   resolvedStyle: Record<string, any> = {},
-  doc: IRDocument
+  doc: IRDocument,
+  colorToVarMap?: Map<string, string>
 ): string {
   const relX = parentLayout ? layout.x - parentLayout.x : layout.x;
   const relY = parentLayout ? layout.y - parentLayout.y : layout.y;
@@ -92,6 +158,12 @@ export function generateNodeCss(
     css += `  mix-blend-mode: ${node.blend_mode};\n`;
   }
 
+  // Transitions
+  const transitionVal = resolvedStyle.transition || node.transition || (node.states ? 'all 0.2s ease' : undefined);
+  if (transitionVal) {
+    css += `  transition: ${transitionVal};\n`;
+  }
+
   // Determine explicit style styling (to avoid inheriting page/canvas level backgrounds and borders)
   const hasExplicitFill = (node.style_override && node.style_override.fill !== undefined) ||
                           (node.style_ref && doc.style_context?.component_styles?.[node.style_ref]?.fill !== undefined);
@@ -105,25 +177,25 @@ export function generateNodeCss(
   // 1. Text color vs Shape background
   if (resolvedStyle.fill) {
     if (node.type === 'text') {
-      css += `  color: ${cssColor(resolvedStyle.fill)};\n`;
+      css += `  color: ${cssColor(resolvedStyle.fill, colorToVarMap)};\n`;
     } else if (hasExplicitFill) {
-      css += `  background-color: ${cssColor(resolvedStyle.fill)};\n`;
+      css += `  background-color: ${cssColor(resolvedStyle.fill, colorToVarMap)};\n`;
     }
   }
 
   // 2. Explicit background color override
   if (hasExplicitBg && resolvedStyle.background_color) {
-    css += `  background-color: ${cssColor(resolvedStyle.background_color)};\n`;
+    css += `  background-color: ${cssColor(resolvedStyle.background_color, colorToVarMap)};\n`;
   }
 
   // 3. Borders / Strokes
   if (node.type !== 'text') {
     if (hasExplicitStroke && resolvedStyle.stroke) {
       const width = resolvedStyle.stroke_width ?? 1;
-      css += `  border: ${width}px solid ${cssColor(resolvedStyle.stroke)};\n`;
+      css += `  border: ${width}px solid ${cssColor(resolvedStyle.stroke, colorToVarMap)};\n`;
     } else if (hasExplicitBorderColor && resolvedStyle.border_color) {
       const width = resolvedStyle.border_width ?? 1;
-      css += `  border: ${width}px solid ${cssColor(resolvedStyle.border_color)};\n`;
+      css += `  border: ${width}px solid ${cssColor(resolvedStyle.border_color, colorToVarMap)};\n`;
     }
   }
 
@@ -149,6 +221,15 @@ export function generateNodeCss(
   }
 
   css += `}\n`;
+
+  // Pseudo-class states
+  if (node.states?.hover) {
+    css += generateStateCss(node.id, node.type, 'hover', node.states.hover, doc, colorToVarMap);
+  }
+  if (node.states?.active) {
+    css += generateStateCss(node.id, node.type, 'active', node.states.active, doc, colorToVarMap);
+  }
+
   return css;
 }
 
@@ -156,13 +237,37 @@ export function renderWeb(
   doc: IRDocument,
   layouts: Record<string, ComputedLayout>
 ): { html: string; css: string; fullHtml: string } {
+  const themeColors = doc.style_context?.theme_tokens?.colors || {};
+  const colorToVarMap = new Map<string, string>();
+  
+  let themeVarsCss = '';
+  for (const [key, val] of Object.entries(themeColors)) {
+    const varName = `--color-${key.replace(/_/g, '-')}`;
+    const cssVal = cssColor(val);
+    if (cssVal) {
+      themeVarsCss += `  ${varName}: ${cssVal};\n`;
+      const normalizeColorStr = (c: any): string => {
+        if (typeof c === 'string') return c.trim().toLowerCase();
+        return cssColor(c).trim().toLowerCase();
+      };
+      colorToVarMap.set(normalizeColorStr(val), `var(${varName})`);
+    }
+  }
+
   let html = `<div id="ir-canvas">\n`;
   let css = `#ir-canvas {\n`;
   css += `  position: relative;\n`;
   css += `  width: ${doc.canvas.width === 'auto' ? '100%' : `${doc.canvas.width}px`};\n`;
   css += `  height: ${doc.canvas.height === 'auto' ? '100%' : `${doc.canvas.height}px`};\n`;
   css += `  overflow: hidden;\n`;
-  css += `  background-color: #ffffff;\n`;
+  if (themeColors.background_color) {
+    css += `  background-color: ${cssColor(themeColors.background_color, colorToVarMap)};\n`;
+  } else {
+    css += `  background-color: #ffffff;\n`;
+  }
+  if (themeVarsCss) {
+    css += `\n  /* Theme Variables */\n${themeVarsCss}`;
+  }
   css += `}\n\n`;
 
   const resolvedStyles = doc.style_context?.resolved || {};
@@ -174,7 +279,7 @@ export function renderWeb(
   const processNodeCss = (node: IRNode, parentLayout?: ComputedLayout) => {
     const layout = layouts[node.id];
     if (layout) {
-      css += generateNodeCss(node, layout, parentLayout, resolvedStyles[node.id] || {}, doc);
+      css += generateNodeCss(node, layout, parentLayout, resolvedStyles[node.id] || {}, doc, colorToVarMap);
     }
     if (node.children) {
       node.children.forEach((child) => processNodeCss(child, layout));

@@ -105,6 +105,15 @@
       "type": "array",
       "items": { "type": "string" }
     },
+    "states": {
+      "type": "object",
+      "properties": {
+        "hover": { "type": "object" },
+        "active": { "type": "object" }
+      },
+      "additionalProperties": false
+    },
+    "transition": { "type": "string" },
     "x_debug_trace": { "type": "object" }
   },
   "required": [

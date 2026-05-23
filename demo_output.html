@@ -20,7 +20,12 @@
   width: 800px;
   height: 600px;
   overflow: hidden;
-  background-color: #ffffff;
+  background-color: var(--color-background-color);
+
+  /* Theme Variables */
+  --color-fill: #1e1e2e;
+  --color-stroke: #313244;
+  --color-background-color: #11111b;
 }
 
 #card-1 {
@@ -73,7 +78,7 @@
   top: 160px;
   width: 370px;
   height: 120px;
-  background-color: #313244;
+  background-color: var(--color-stroke);
   border-radius: 12px;
 }
 #box-text-1 {
@@ -95,8 +100,17 @@
   top: 310px;
   width: 520px;
   height: 50px;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   background-color: #89b4fa;
   border-radius: 8px;
+}
+#button-1:hover {
+  background-color: #a6e3a1;
+  transform: scale(1.02, 1.02);
+}
+#button-1:active {
+  background-color: #94e2d5;
+  transform: scale(0.98, 0.98);
 }
 #btn-text {
   position: absolute;
@@ -106,7 +120,7 @@
   height: 19.2px;
   word-wrap: break-word;
   white-space: normal;
-  color: #11111b;
+  color: var(--color-background-color);
   font-family: Inter, system-ui, sans-serif;
   font-size: 16px;
   font-weight: 700;

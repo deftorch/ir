@@ -108,6 +108,7 @@ export interface StyleOverride {
   border_color?: ColorValue;
   border_width?: number;
   border_radius?: number;
+  transition?: string;
   [key: string]: any;
 }
 
@@ -166,6 +167,11 @@ export interface IRNode {
   stacking_context?: boolean;
   style_ref?: string;
   style_override?: StyleOverride;
+  states?: {
+    hover?: StyleOverride;
+    active?: StyleOverride;
+  };
+  transition?: string;
   properties: NodeProperties;
   children?: IRNode[];
   component_ref?: IRComponentRef;
