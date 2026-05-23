@@ -1,7 +1,7 @@
 import Ajv, { ErrorObject } from 'ajv';
 import addFormats from 'ajv-formats';
 import { schemas, IRDocument, IRError, IRNode } from 'ir-schema';
-import { evaluateExpression } from './semantic-dsl';
+import { evaluateExpression, resolveStyleContext } from './semantic-dsl';
 
 // Initialize AJV instance and register schemas from ir-schema
 const ajv = new Ajv({
@@ -87,7 +87,12 @@ export function validateIR(doc: unknown): { valid: boolean; errors: IRError[] } 
   const isValid = docValidator(doc);
 
   if (isValid) {
-    const semanticErrors = validateSemanticRules(doc as IRDocument);
+    const irDoc = doc as IRDocument;
+    irDoc.style_context.resolved = resolveStyleContext(irDoc);
+
+    const semanticErrors = validateSemanticRules(irDoc);
+    irDoc.style_context.resolved = resolveStyleContext(irDoc);
+
     const hasHardErrors = semanticErrors.some((e) => e.severity === 'error');
     return {
       valid: !hasHardErrors,
@@ -107,7 +112,7 @@ export function validateSemanticRules(doc: IRDocument): IRError[] {
   const rules = doc.constraints?.semantic_rules || [];
 
   for (const rule of rules) {
-    const { id, scope, condition, violation, message } = rule;
+    const { id, scope, condition, violation, message, auto_fix } = rule;
 
     const createError = (path: string): IRError => ({
       code: 'semantic_rule_violation',
@@ -118,21 +123,35 @@ export function validateSemanticRules(doc: IRDocument): IRError[] {
 
     try {
       if (scope === 'document') {
-        const result = evaluateExpression(condition, {
+        const context = {
           canvas: doc.canvas,
           document: doc
-        });
+        };
+        const result = evaluateExpression(condition, context);
         if (!result) {
+          if (auto_fix) {
+            try {
+              evaluateExpression(auto_fix, context);
+              if (evaluateExpression(condition, context)) continue;
+            } catch (e) {}
+          }
           errors.push(createError('/constraints/semantic_rules'));
         }
       } else if (scope === 'object') {
         const traverse = (node: IRNode, path: string) => {
-          const result = evaluateExpression(condition, {
+          const context = {
             self: node,
             canvas: doc.canvas,
             document: doc
-          });
+          };
+          const result = evaluateExpression(condition, context);
           if (!result) {
+            if (auto_fix) {
+              try {
+                evaluateExpression(auto_fix, context);
+                if (evaluateExpression(condition, context)) return;
+              } catch (e) {}
+            }
             errors.push(createError(path));
           }
           if (node.children) {
@@ -150,13 +169,23 @@ export function validateSemanticRules(doc: IRDocument): IRError[] {
           if (node.children) {
             node.children.forEach((child, index) => {
               const childPath = `${path}/children/${index}`;
-              const result = evaluateExpression(condition, {
+              const context = {
                 self: child,
                 parent: node,
                 canvas: doc.canvas,
                 document: doc
-              });
+              };
+              const result = evaluateExpression(condition, context);
               if (!result) {
+                if (auto_fix) {
+                  try {
+                    evaluateExpression(auto_fix, context);
+                    if (evaluateExpression(condition, context)) {
+                      traverse(child, childPath);
+                      return;
+                    }
+                  } catch (e) {}
+                }
                 errors.push(createError(childPath));
               }
               traverse(child, childPath);
@@ -170,12 +199,19 @@ export function validateSemanticRules(doc: IRDocument): IRError[] {
       } else if (scope === 'siblings') {
         const checkSiblings = (siblings: IRNode[], basePath: string) => {
           siblings.forEach((node, index) => {
-            const result = evaluateExpression(condition, {
+            const context = {
               self: node,
               canvas: doc.canvas,
               document: doc
-            });
+            };
+            const result = evaluateExpression(condition, context);
             if (!result) {
+              if (auto_fix) {
+                try {
+                  evaluateExpression(auto_fix, context);
+                  if (evaluateExpression(condition, context)) return;
+                } catch (e) {}
+              }
               errors.push(createError(`${basePath}/${index}`));
             }
           });

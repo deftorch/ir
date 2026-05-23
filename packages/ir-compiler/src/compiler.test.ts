@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { createIRDocument, createIRCanvas, createIRNode, IRError } from 'ir-schema';
+import { createIRDocument, createIRCanvas, createIRNode, createIRStyleContext, IRError } from 'ir-schema';
 import { compileIR, validateIR, parseAndValidateWithRefinement, FileStorage } from './index';
 import fs from 'fs';
 import path from 'path';
@@ -93,6 +93,89 @@ describe('ir-compiler parse & validation', () => {
     await expect(parseAndValidateWithRefinement(faultyJson, refiner)).rejects.toThrow(
       /Failed to compile IR Document after 3 refine attempts/
     );
+  });
+});
+
+describe('ir-compiler style cascade & semantic auto-fix', () => {
+  const validCanvas = createIRCanvas({ platform: 'web', width: 800, height: 600 });
+
+  it('should resolve style cascade properly (object > component > theme)', () => {
+    const style_context = createIRStyleContext({
+      theme_tokens: {
+        colors: { fill: '#ff0000' },
+        typography: { families: {}, sizes: {}, weights: {}, line_heights: {}, spacings: {} },
+        spacing: {},
+        radii: {},
+        shadows: {},
+        easings: {},
+        durations: {}
+      },
+      component_styles: {
+        'style-a': { fill: '#00ff00', stroke: '#0000ff' }
+      }
+    });
+
+    const doc = createIRDocument({
+      domain: 'visual',
+      session_id: 'session-style',
+      canvas: validCanvas,
+      style_context,
+      objects: [
+        createIRNode({
+          id: 'node-1',
+          type: 'shape',
+          style_ref: 'style-a',
+          style_override: { stroke: '#ffff00' }
+        })
+      ]
+    });
+
+    const result = validateIR(doc);
+    expect(result.valid).toBe(true);
+
+    const resolved = doc.style_context.resolved;
+    expect(resolved).toBeDefined();
+    expect(resolved?.['node-1']).toBeDefined();
+    // fill comes from component_styles (overrides theme)
+    expect(resolved?.['node-1'].fill).toBe('#00ff00');
+    // stroke comes from style_override (overrides component_styles)
+    expect(resolved?.['node-1'].stroke).toBe('#ffff00');
+  });
+
+  it('should run auto_fix expression and correct violations', () => {
+    const doc = createIRDocument({
+      domain: 'visual',
+      session_id: 'session-autofix',
+      canvas: validCanvas,
+      objects: [
+        createIRNode({
+          id: 'node-2',
+          type: 'text',
+          style_override: { fill: '#000000' } // violating value
+        })
+      ],
+      constraints: {
+        semantic_rules: [
+          {
+            id: 'force-white-text',
+            scope: 'object',
+            condition: 'self.fill == "#ffffff"',
+            violation: 'error',
+            message: 'Text must be white',
+            auto_fix: 'self.fill = "#ffffff"'
+          }
+        ]
+      }
+    });
+
+    const result = validateIR(doc);
+    // Should be valid because of auto-fix
+    expect(result.valid).toBe(true);
+    expect(result.errors.length).toBe(0);
+
+    // Verify mutating change was applied to the document node and resolved style context
+    expect(doc.objects[0].style_override?.fill).toBe('#ffffff');
+    expect(doc.style_context.resolved?.['node-2'].fill).toBe('#ffffff');
   });
 });
 

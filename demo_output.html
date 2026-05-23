@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IR Render Output</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      background-color: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    #ir-canvas {
+  position: relative;
+  width: 800px;
+  height: 600px;
+  overflow: hidden;
+  background-color: #ffffff;
+}
+
+#card-1 {
+  position: absolute;
+  left: 100px;
+  top: 100px;
+  width: 600px;
+  height: 400px;
+  background-color: #181825;
+  border: 2px solid #45475a;
+  border-radius: 16px;
+}
+#title-1 {
+  position: absolute;
+  left: 40px;
+  top: 40px;
+  width: 336px;
+  height: 33.6px;
+  word-wrap: break-word;
+  white-space: normal;
+  color: #cdd6f4;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+}
+#desc-1 {
+  position: absolute;
+  left: 40px;
+  top: 90px;
+  width: 520px;
+  height: 57.599999999999994px;
+  word-wrap: break-word;
+  white-space: normal;
+  color: #ffffff;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 16px;
+}
+#badge-1 {
+  position: absolute;
+  left: 40px;
+  top: 160px;
+  width: 120px;
+  height: 120px;
+  background-color: #f38ba8;
+  border-radius: 60px;
+}
+#box-1 {
+  position: absolute;
+  left: 190px;
+  top: 160px;
+  width: 370px;
+  height: 120px;
+  background-color: #313244;
+  border-radius: 12px;
+}
+#box-text-1 {
+  position: absolute;
+  left: 20px;
+  top: 20px;
+  width: 215.99999999999997px;
+  height: 21.599999999999998px;
+  word-wrap: break-word;
+  white-space: normal;
+  color: #f5e0dc;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+}
+#button-1 {
+  position: absolute;
+  left: 40px;
+  top: 310px;
+  width: 520px;
+  height: 50px;
+  background-color: #89b4fa;
+  border-radius: 8px;
+}
+#btn-text {
+  position: absolute;
+  left: 210px;
+  top: 15px;
+  width: 201.6px;
+  height: 19.2px;
+  word-wrap: break-word;
+  white-space: normal;
+  color: #11111b;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+  </style>
+</head>
+<body>
+  <div id="ir-canvas">
+<div id="card-1" class="ir-node ir-frame"><div id="title-1" class="ir-node ir-text">IR Web Renderer Demo</div>
+<div id="desc-1" class="ir-node ir-text">This card and its contents were compiled using the IR Pipeline, resolving cascading styles and computing absolute layouts dynamically.</div>
+<div id="badge-1" class="ir-node ir-shape"></div>
+<div id="box-1" class="ir-node ir-shape"><div id="box-text-1" class="ir-node ir-text">Nested Child Element</div></div>
+<div id="button-1" class="ir-node ir-shape"><div id="btn-text" class="ir-node ir-text">Acknowledge & Confirm</div></div></div>
+</div>
+</body>
+</html>

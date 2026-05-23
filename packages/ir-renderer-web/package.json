@@ -1,0 +1,21 @@
+{
+  "name": "ir-renderer-web",
+  "version": "0.1.0",
+  "description": "Web renderer (HTML/CSS) for IR Visual Design & Multimedia DSL",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -b",
+    "test": "vitest run"
+  },
+  "keywords": ["ir", "renderer", "web", "html", "css", "dsl"],
+  "author": "deftorch",
+  "license": "MIT",
+  "dependencies": {
+    "ir-schema": "^0.1.0",
+    "ir-compiler": "^0.1.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

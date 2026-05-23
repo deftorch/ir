@@ -135,6 +135,10 @@
         "object_overrides": {
           "type": "object",
           "additionalProperties": { "type": "object" }
+        },
+        "resolved": {
+          "type": "object",
+          "additionalProperties": { "type": "object" }
         }
       },
       "required": ["theme_tokens", "component_styles", "object_overrides"],

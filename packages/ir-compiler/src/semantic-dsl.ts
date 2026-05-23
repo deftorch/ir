@@ -67,12 +67,14 @@ export function tokenize(input: string): Token[] {
       continue;
     }
 
-    // Multi-char operators: ==, !=, <=, >=
+    // Multi-char operators: ==, !=, <=, >=, ||, &&
     if (
       (char === '=' && input[i + 1] === '=') ||
       (char === '!' && input[i + 1] === '=') ||
       (char === '<' && input[i + 1] === '=') ||
-      (char === '>' && input[i + 1] === '=')
+      (char === '>' && input[i + 1] === '=') ||
+      (char === '|' && input[i + 1] === '|') ||
+      (char === '&' && input[i + 1] === '&')
     ) {
       tokens.push({ type: 'OPERATOR', value: char + input[i + 1] });
       i += 2;
@@ -175,11 +177,50 @@ export class Parser {
   }
 
   public parse(): ASTNode {
-    return this.expression();
+    return this.assignment();
+  }
+
+  private assignment(): ASTNode {
+    const expr = this.expression();
+
+    if (this.match('OPERATOR') && this.previous().value === '=') {
+      const right = this.assignment();
+      return {
+        type: 'AssignmentExpression',
+        left: expr,
+        right
+      } as any;
+    }
+
+    return expr;
   }
 
   private expression(): ASTNode {
-    return this.relational();
+    return this.logicalOr();
+  }
+
+  private logicalOr(): ASTNode {
+    let expr = this.logicalAnd();
+
+    while (this.peek().type === 'OPERATOR' && this.peek().value === '||') {
+      const operator = this.advance().value;
+      const right = this.logicalAnd();
+      expr = { type: 'BinaryExpression', left: expr, operator, right };
+    }
+
+    return expr;
+  }
+
+  private logicalAnd(): ASTNode {
+    let expr = this.relational();
+
+    while (this.peek().type === 'OPERATOR' && this.peek().value === '&&') {
+      const operator = this.advance().value;
+      const right = this.relational();
+      expr = { type: 'BinaryExpression', left: expr, operator, right };
+    }
+
+    return expr;
   }
 
   private relational(): ASTNode {
@@ -400,6 +441,51 @@ export function resolveNodeStyleProperty(node: IRNode, doc: IRDocument, property
   return undefined;
 }
 
+export function resolveNodeStyle(node: IRNode, doc: IRDocument): Record<string, any> {
+  const resolvedStyle: Record<string, any> = {};
+
+  const theme = doc.style_context?.theme_tokens;
+  if (theme) {
+    const colorProps = ['fill', 'stroke', 'background_color', 'border_color'];
+    for (const prop of colorProps) {
+      if (theme.colors && theme.colors[prop] !== undefined) {
+        resolvedStyle[prop] = resolveValue(theme.colors[prop], doc);
+      }
+    }
+  }
+
+  if (node.style_ref && doc.style_context?.component_styles) {
+    const compStyle = doc.style_context.component_styles[node.style_ref];
+    if (compStyle) {
+      for (const [key, val] of Object.entries(compStyle)) {
+        resolvedStyle[key] = resolveValue(val, doc);
+      }
+    }
+  }
+
+  if (node.style_override) {
+    for (const [key, val] of Object.entries(node.style_override)) {
+      resolvedStyle[key] = resolveValue(val, doc);
+    }
+  }
+
+  return resolvedStyle;
+}
+
+export function resolveStyleContext(doc: IRDocument): Record<string, Record<string, any>> {
+  const resolvedMap: Record<string, Record<string, any>> = {};
+
+  const traverse = (node: IRNode) => {
+    resolvedMap[node.id] = resolveNodeStyle(node, doc);
+    if (node.children) {
+      node.children.forEach(traverse);
+    }
+  };
+
+  doc.objects.forEach(traverse);
+  return resolvedMap;
+}
+
 export function evaluateAST(node: ASTNode, context: EvaluationContext): any {
   switch (node.type) {
     case 'Literal':
@@ -501,9 +587,53 @@ export function evaluateAST(node: ASTNode, context: EvaluationContext): any {
           return left <= right;
         case '>=':
           return left >= right;
+        case '||':
+          return left || right;
+        case '&&':
+          return left && right;
         default:
           throw new Error(`Evaluator Error: Unsupported binary operator "${op}"`);
       }
+    }
+
+    case 'AssignmentExpression' as any: {
+      const rightVal = evaluateAST((node as any).right, context);
+      executeAssignment((node as any).left, rightVal, context);
+      return rightVal;
+    }
+  }
+}
+
+export function executeAssignment(left: ASTNode, rightValue: any, context: EvaluationContext) {
+  if (left.type === 'MemberAccess') {
+    const obj = evaluateAST(left.object, context);
+    const prop = left.property;
+
+    if (obj && typeof obj === 'object') {
+      if (obj.id && obj.type) {
+        const node = obj as IRNode;
+        if (['fill', 'stroke', 'background_color', 'border_color'].includes(prop)) {
+          if (!node.style_override) {
+            node.style_override = {};
+          }
+          node.style_override[prop] = rightValue;
+          return;
+        }
+        if (prop === 'width' || prop === 'height') {
+          node.size[prop] = rightValue;
+          return;
+        }
+        if (prop === 'x' || prop === 'y') {
+          node.position[prop] = rightValue;
+          return;
+        }
+        if (!node.properties) {
+          node.properties = {};
+        }
+        node.properties[prop] = rightValue;
+        return;
+      }
+      obj[prop] = rightValue;
     }
   }
 }

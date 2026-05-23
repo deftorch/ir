@@ -237,6 +237,7 @@ export interface IRStyleContext {
   theme_tokens: DesignTokenMap;
   component_styles: Record<string, StyleOverride>;
   object_overrides: Record<string, StyleOverride>;
+  resolved?: Record<string, StyleOverride>;
 }
 
 export interface IRError {

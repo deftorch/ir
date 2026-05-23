@@ -98,7 +98,8 @@ export function createIRStyleContext(params: Partial<IRStyleContext> = {}): IRSt
       durations: {}
     },
     component_styles: params.component_styles ?? {},
-    object_overrides: params.object_overrides ?? {}
+    object_overrides: params.object_overrides ?? {},
+    resolved: params.resolved
   };
 }
 
