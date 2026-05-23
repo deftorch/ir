@@ -1,0 +1,123 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ir-dsl.org/schemas/node.json",
+  "title": "IRNode",
+  "type": "object",
+  "properties": {
+    "id": { "type": "string" },
+    "type": {
+      "type": "string",
+      "enum": ["text", "image", "shape", "group", "frame"]
+    },
+    "position": {
+      "type": "object",
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "z": { "type": "number" }
+      },
+      "required": ["x", "y"],
+      "additionalProperties": false
+    },
+    "size": {
+      "type": "object",
+      "properties": {
+        "width": {
+          "oneOf": [{ "type": "number" }, { "type": "string", "enum": ["auto"] }]
+        },
+        "height": {
+          "oneOf": [{ "type": "number" }, { "type": "string", "enum": ["auto"] }]
+        }
+      },
+      "required": ["width", "height"],
+      "additionalProperties": false
+    },
+    "rotation": { "type": "number" },
+    "scale": {
+      "type": "object",
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" }
+      },
+      "required": ["x", "y"],
+      "additionalProperties": false
+    },
+    "transform_origin": {
+      "type": "object",
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" }
+      },
+      "required": ["x", "y"],
+      "additionalProperties": false
+    },
+    "opacity": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0
+    },
+    "visible": { "type": "boolean" },
+    "locked": { "type": "boolean" },
+    "z_index": { "type": "integer" },
+    "blend_mode": {
+      "type": "string",
+      "enum": [
+        "normal",
+        "multiply",
+        "screen",
+        "overlay",
+        "darken",
+        "lighten",
+        "color-dodge",
+        "color-burn",
+        "hard-light",
+        "soft-light",
+        "difference",
+        "exclusion",
+        "hue",
+        "saturation",
+        "color",
+        "luminosity"
+      ]
+    },
+    "stacking_context": { "type": "boolean" },
+    "style_ref": { "type": "string" },
+    "style_override": { "type": "object" },
+    "properties": { "type": "object" },
+    "children": {
+      "type": "array",
+      "items": { "$ref": "#" }
+    },
+    "component_ref": {
+      "type": "object",
+      "properties": {
+        "ir_id": { "type": "string" },
+        "component_id": { "type": "string" },
+        "version": { "type": "string" },
+        "prop_overrides": { "type": "object" },
+        "style_overrides": { "type": "object" }
+      },
+      "required": ["ir_id", "component_id", "version"],
+      "additionalProperties": false
+    },
+    "renderer": { "type": "string" },
+    "brand_tokens": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "x_debug_trace": { "type": "object" }
+  },
+  "required": [
+    "id",
+    "type",
+    "position",
+    "size",
+    "rotation",
+    "scale",
+    "opacity",
+    "visible",
+    "locked",
+    "properties"
+  ],
+  "additionalProperties": false
+}

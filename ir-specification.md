@@ -1,9 +1,8 @@
-
 # IR Specification — Visual Design & Multimedia System DSL
+
 ### Synthesized from: Domain Analysis · IR Strategy Discussion · Genesis Design Document
 
 ---
-
 
 ## Philosophy & Core Principles
 
@@ -18,7 +17,6 @@ IR is not just "what to render". IR is a **formal contract** that defines everyt
 5. **Domain-Aware, Platform-Agnostic** — IR knows the domain (visual, video, audio, print) but not how to render. The renderer holds platform knowledge.
 
 ---
-
 
 ## Three-Level IR Architecture
 
@@ -57,26 +55,23 @@ DSL Source (Natural Language / Code / Canvas Action)
 
 ---
 
-
 ## HIR — Complete Schema Specification
-
 
 ### 1. IRDocument — Root
 
 ```typescript
 interface IRDocument {
-
   // ── METADATA ─────────────────────────────────────────────────
   meta: {
-    schema_version  : "2.0";          // STABLE — frozen
-    ir_version      : string;         // document semver
-    ir_id           : string;         // immutable UUID
-    created_at      : string;         // ISO 8601
-    created_by      : "human" | "ai_agent" | "fork" | "import";
-    domain          : IRDomain;
-    session_id      : string;
-    parent_ir_id?   : string;         // for fork and branching
-    component_id?   : string;         // if this is an IR component library
+    schema_version: '2.0'; // STABLE — frozen
+    ir_version: string; // document semver
+    ir_id: string; // immutable UUID
+    created_at: string; // ISO 8601
+    created_by: 'human' | 'ai_agent' | 'fork' | 'import';
+    domain: IRDomain;
+    session_id: string;
+    parent_ir_id?: string; // for fork and branching
+    component_id?: string; // if this is an IR component library
   };
 
   // ── CANVAS ───────────────────────────────────────────────────
@@ -113,22 +108,22 @@ interface IRDocument {
   physical?: IRPhysicalSpec;
 
   // ── EXPERIMENTAL ─────────────────────────────────────────────
-  x_debug?          : IRDebugAnnotations;
+  x_debug?: IRDebugAnnotations;
   x_visual_constraints?: IRVisualConstraintExtension;
 }
 
 type IRDomain =
-  | "visual"          // UI, web, social media, branding
-  | "image_edit"      // photo editing, compositing
-  | "video"           // video editing, motion
-  | "audio"           // audio design, podcast
-  | "motion"          // animation, Lottie, micro-interaction
-  | "print"           // print — CMYK, bleed, DPI
-  | "signage"         // environmental, large format
-  | "packaging"       // packaging — 3D unfold
-  | "data_viz"        // infographics, chart, dashboard
-  | "interactive"     // game UI, interactive infographic
-  | "3d";             // 3D scene, spatial
+  | 'visual' // UI, web, social media, branding
+  | 'image_edit' // photo editing, compositing
+  | 'video' // video editing, motion
+  | 'audio' // audio design, podcast
+  | 'motion' // animation, Lottie, micro-interaction
+  | 'print' // print — CMYK, bleed, DPI
+  | 'signage' // environmental, large format
+  | 'packaging' // packaging — 3D unfold
+  | 'data_viz' // infographics, chart, dashboard
+  | 'interactive' // game UI, interactive infographic
+  | '3d'; // 3D scene, spatial
 ```
 
 ### 2. IRCanvas — Definisi Ruang
@@ -136,43 +131,59 @@ type IRDomain =
 ```typescript
 interface IRCanvas {
   // Dimensi
-  width    : number | "auto";
-  height   : number | "auto";
+  width: number | 'auto';
+  height: number | 'auto';
 
   // Platform target — menentukan constraint rendering
-  platform : PlatformTarget;
+  platform: PlatformTarget;
 
   // Video / motion properties
-  fps?         : number;
-  duration_ms? : number;
-  sample_rate? : number;   // untuk audio domain
+  fps?: number;
+  duration_ms?: number;
+  sample_rate?: number; // untuk audio domain
 
   // Physical output properties (jika domain print/signage)
-  unit?        : "px" | "mm" | "cm" | "in" | "pt";
-  dpi?         : number;
-  color_space? : "sRGB" | "CMYK" | "P3" | "Rec2020";
+  unit?: 'px' | 'mm' | 'cm' | 'in' | 'pt';
+  dpi?: number;
+  color_space?: 'sRGB' | 'CMYK' | 'P3' | 'Rec2020';
 }
 
 type PlatformTarget =
   // Digital
-  | "web"
-  | "ios_native" | "android_native" | "flutter"
+  | 'web'
+  | 'ios_native'
+  | 'android_native'
+  | 'flutter'
   // Social
-  | "instagram_feed" | "instagram_story" | "instagram_reel"
-  | "tiktok" | "youtube_thumbnail" | "youtube_shorts"
-  | "linkedin" | "twitter_post" | "pinterest"
+  | 'instagram_feed'
+  | 'instagram_story'
+  | 'instagram_reel'
+  | 'tiktok'
+  | 'youtube_thumbnail'
+  | 'youtube_shorts'
+  | 'linkedin'
+  | 'twitter_post'
+  | 'pinterest'
   // Print
-  | "print_a4" | "print_a3" | "print_a5"
-  | "print_letter" | "print_tabloid"
+  | 'print_a4'
+  | 'print_a3'
+  | 'print_a5'
+  | 'print_letter'
+  | 'print_tabloid'
   // Large format
-  | "billboard_horizontal" | "billboard_vertical"
-  | "rollup_banner" | "xbanner"
+  | 'billboard_horizontal'
+  | 'billboard_vertical'
+  | 'rollup_banner'
+  | 'xbanner'
   // Packaging
-  | "packaging_box" | "packaging_pouch" | "packaging_label"
+  | 'packaging_box'
+  | 'packaging_pouch'
+  | 'packaging_label'
   // Presentation
-  | "presentation_16_9" | "presentation_4_3"
+  | 'presentation_16_9'
+  | 'presentation_4_3'
   // Custom
-  | { type: "custom"; width: number; height: number; unit: string };
+  | { type: 'custom'; width: number; height: number; unit: string };
 ```
 
 ### 3. IRStyleContext — Style Cascade System
@@ -203,24 +214,24 @@ interface DesignTokenMap {
 
   // Typography tokens
   typography: {
-    families : Record<string, string>;
-    sizes    : Record<string, number>;
-    weights  : Record<string, number>;
+    families: Record<string, string>;
+    sizes: Record<string, number>;
+    weights: Record<string, number>;
     line_heights: Record<string, number>;
-    spacings : Record<string, number>;
+    spacings: Record<string, number>;
   };
 
   // Spacing tokens
-  spacing  : Record<string, number>;
+  spacing: Record<string, number>;
 
   // Border radius tokens
-  radii    : Record<string, number>;
+  radii: Record<string, number>;
 
   // Shadow tokens
-  shadows  : Record<string, ShadowDef>;
+  shadows: Record<string, ShadowDef>;
 
   // Motion tokens
-  easings  : Record<string, EasingDef>;
+  easings: Record<string, EasingDef>;
   durations: Record<string, number>;
 
   // Custom tokens (extensible)
@@ -229,10 +240,10 @@ interface DesignTokenMap {
 
 // ColorValue mendukung 4 format (dari Genesis + extended)
 type ColorValue =
-  | string              // "#FF5733"
-  | "brand://primary"   // brand token reference
-  | "theme://colors.primary" // theme token reference
-  | { r: number; g: number; b: number; a: number }  // RGBA object
+  | string // "#FF5733"
+  | 'brand://primary' // brand token reference
+  | 'theme://colors.primary' // theme token reference
+  | { r: number; g: number; b: number; a: number } // RGBA object
   | { c: number; m: number; y: number; k: number }; // CMYK untuk print
 ```
 
@@ -240,28 +251,28 @@ type ColorValue =
 
 ```typescript
 interface IRNode {
-  id        : string;
-  type      : IRNodeType;
+  id: string;
+  type: IRNodeType;
 
   // Transform
-  position  : { x: number; y: number; z?: number };
-  size      : { width: number | "auto"; height: number | "auto" };
-  rotation  : number;         // degrees
-  scale     : { x: number; y: number };
+  position: { x: number; y: number; z?: number };
+  size: { width: number | 'auto'; height: number | 'auto' };
+  rotation: number; // degrees
+  scale: { x: number; y: number };
   transform_origin?: { x: number; y: number };
 
   // Visibility
-  opacity   : number;         // 0.0–1.0
-  visible   : boolean;
-  locked    : boolean;
+  opacity: number; // 0.0–1.0
+  visible: boolean;
+  locked: boolean;
 
   // Stacking — formal z-ordering
-  z_index?  : number;
+  z_index?: number;
   blend_mode?: BlendMode;
   stacking_context?: boolean;
 
   // Style — referensi ke cascade system
-  style_ref?: string;         // ID dari component_styles
+  style_ref?: string; // ID dari component_styles
   // Override langsung (level 3 dari cascade)
   style_override?: StyleOverride;
 
@@ -269,13 +280,13 @@ interface IRNode {
   properties: NodeProperties;
 
   // Children (untuk group, frame, component)
-  children? : IRNode[];
+  children?: IRNode[];
 
   // Component reference (cross-IR)
   component_ref?: IRComponentRef;
 
   // Renderer override (dari Genesis)
-  renderer? : string;
+  renderer?: string;
 
   // Brand tokens yang dipakai (dari Genesis)
   brand_tokens?: string[];
@@ -286,20 +297,43 @@ interface IRNode {
 
 type IRNodeType =
   // Primitif visual
-  | "text" | "image" | "shape" | "path" | "group" | "frame"
+  | 'text'
+  | 'image'
+  | 'shape'
+  | 'path'
+  | 'group'
+  | 'frame'
   // Media
-  | "video_clip" | "audio_track" | "animation" | "lottie"
+  | 'video_clip'
+  | 'audio_track'
+  | 'animation'
+  | 'lottie'
   // Advanced visual
-  | "particle_system" | "shader_effect" | "gradient"
-  | "blur_effect" | "shadow_effect"
+  | 'particle_system'
+  | 'shader_effect'
+  | 'gradient'
+  | 'blur_effect'
+  | 'shadow_effect'
   // Data viz
-  | "chart" | "data_table" | "map" | "gauge"
+  | 'chart'
+  | 'data_table'
+  | 'map'
+  | 'gauge'
   // 3D
-  | "mesh_3d" | "light_3d" | "camera_3d" | "scene_3d"
+  | 'mesh_3d'
+  | 'light_3d'
+  | 'camera_3d'
+  | 'scene_3d'
   // Interaksi
-  | "button" | "slider" | "toggle" | "hotspot" | "form_field"
+  | 'button'
+  | 'slider'
+  | 'toggle'
+  | 'hotspot'
+  | 'form_field'
   // Layout
-  | "flex_container" | "grid_container" | "masonry_container"
+  | 'flex_container'
+  | 'grid_container'
+  | 'masonry_container'
   // Tool-generated (dari Tool Creation Agent)
   | string;
 ```
@@ -309,42 +343,42 @@ type IRNodeType =
 ```typescript
 interface IRConstraintSet {
   // Brand compliance (dari Genesis)
-  brand_profile_id? : string;
+  brand_profile_id?: string;
 
   // Accessibility
-  wcag_level?       : "A" | "AA" | "AAA";
+  wcag_level?: 'A' | 'AA' | 'AAA';
 
   // Content authenticity (EU AI Act)
-  c2pa_required?    : boolean;
+  c2pa_required?: boolean;
 
   // Output limits
-  max_file_size_kb? : number;
-  max_objects?      : number;
+  max_file_size_kb?: number;
+  max_objects?: number;
 
   // Semantic constraints — BARU, tidak ada di Genesis awal
   // Validasi relational antar objects (melampaui JSON Schema)
-  semantic_rules    : IRSemanticRule[];
+  semantic_rules: IRSemanticRule[];
 
   // Layout constraints
   layout_constraints: IRLayoutConstraint[];
 }
 
 interface IRSemanticRule {
-  id        : string;
-  scope     : "object" | "parent_child" | "siblings" | "document";
-  condition : string;   // DSL expression
+  id: string;
+  scope: 'object' | 'parent_child' | 'siblings' | 'document';
+  condition: string; // DSL expression
   // Contoh: "text.fill.contrast_with(parent.fill) >= 4.5"
   // Contoh: "image.width / image.height == canvas.aspect_ratio"
-  violation : "error" | "warning" | "info";
-  message   : string;
-  auto_fix? : string;   // DSL expression untuk auto-fix
+  violation: 'error' | 'warning' | 'info';
+  message: string;
+  auto_fix?: string; // DSL expression untuk auto-fix
 }
 
 interface IRLayoutConstraint {
-  id      : string;
-  type    : "pin" | "align" | "distribute" | "aspect_ratio" | "min_size";
-  targets : string[];   // object IDs
-  params  : Record<string, unknown>;
+  id: string;
+  type: 'pin' | 'align' | 'distribute' | 'aspect_ratio' | 'min_size';
+  targets: string[]; // object IDs
+  params: Record<string, unknown>;
 }
 ```
 
@@ -355,9 +389,9 @@ synchronization contract antar track.
 
 ```typescript
 interface IRTimeline {
-  total_duration_ms  : number;
-  time_unit          : "ms" | "frames" | "beats";
-  bpm?               : number;   // untuk beat-based sync (audio/motion)
+  total_duration_ms: number;
+  time_unit: 'ms' | 'frames' | 'beats';
+  bpm?: number; // untuk beat-based sync (audio/motion)
 
   // Track layers — bisa campur video, audio, animasi
   layers: IRTimelineLayer[];
@@ -370,52 +404,61 @@ interface IRTimeline {
 }
 
 interface IRTimelineLayer {
-  layer_id    : string;
-  layer_type  : "video" | "audio" | "animation" | "effect" | "text";
-  object_ref  : string;         // ID IRNode
-  start_ms    : number;
-  end_ms      : number;
-  keyframes   : IRKeyframe[];
-  transitions : IRTransition[];
-  effects     : IREffect[];
-  muted?      : boolean;
-  solo?       : boolean;
-  volume?     : number;         // 0.0–1.0 untuk audio layer
+  layer_id: string;
+  layer_type: 'video' | 'audio' | 'animation' | 'effect' | 'text';
+  object_ref: string; // ID IRNode
+  start_ms: number;
+  end_ms: number;
+  keyframes: IRKeyframe[];
+  transitions: IRTransition[];
+  effects: IREffect[];
+  muted?: boolean;
+  solo?: boolean;
+  volume?: number; // 0.0–1.0 untuk audio layer
 }
 
 // Synchronization Contract — menyelesaikan gap di Genesis
 interface IRSyncContract {
-  id              : string;
-  primary_track   : string;    // track yang jadi master reference
-  secondary_tracks: string[];  // track yang mengikuti primary
+  id: string;
+  primary_track: string; // track yang jadi master reference
+  secondary_tracks: string[]; // track yang mengikuti primary
 
-  anchor_type: "absolute"       // sync ke timeline absolute
-             | "relative_to"    // offset dari primary
-             | "beat_sync"      // sync ke BPM
-             | "event_trigger"; // sync ke event di primary track
+  anchor_type:
+    | 'absolute' // sync ke timeline absolute
+    | 'relative_to' // offset dari primary
+    | 'beat_sync' // sync ke BPM
+    | 'event_trigger'; // sync ke event di primary track
 
   // Apa yang terjadi kalau renderer terlambat?
-  underrun_policy: "pause_all"    // pause semua track
-                 | "drop_frame"   // skip frame, jangan pause audio
-                 | "stretch";     // stretch secondary untuk catch-up
+  underrun_policy:
+    | 'pause_all' // pause semua track
+    | 'drop_frame' // skip frame, jangan pause audio
+    | 'stretch'; // stretch secondary untuk catch-up
 
-  drift_tolerance_ms: number;    // berapa ms desync masih diterima
+  drift_tolerance_ms: number; // berapa ms desync masih diterima
 }
 
 interface IRKeyframe {
-  time_ms   : number;
-  property  : string;           // path ke property, e.g. "opacity"
-  value     : unknown;
-  easing    : EasingType | EasingDef;
+  time_ms: number;
+  property: string; // path ke property, e.g. "opacity"
+  value: unknown;
+  easing: EasingType | EasingDef;
 }
 
 type EasingType =
-  | "linear" | "ease" | "ease_in" | "ease_out" | "ease_in_out"
-  | "spring" | "bounce" | "step_start" | "step_end";
+  | 'linear'
+  | 'ease'
+  | 'ease_in'
+  | 'ease_out'
+  | 'ease_in_out'
+  | 'spring'
+  | 'bounce'
+  | 'step_start'
+  | 'step_end';
 
 interface EasingDef {
-  type    : "cubic_bezier" | "spring" | "steps";
-  params  : number[];
+  type: 'cubic_bezier' | 'spring' | 'steps';
+  params: number[];
 }
 ```
 
@@ -423,32 +466,33 @@ interface EasingDef {
 
 ```typescript
 interface IRDataBinding {
-  id           : string;
-  target_path  : string;    // path ke property di IRNode tree
+  id: string;
+  target_path: string; // path ke property di IRNode tree
   // Contoh: "objects[id=chart-001].properties.data_points"
 
   source: {
-    type    : "static"       // nilai tidak berubah (default)
-            | "api_endpoint" // fetch dari URL
-            | "mcp_tool"     // panggil MCP tool
-            | "user_input"   // input dari user saat runtime
-            | "formula";     // computed dari binding lain
+    type:
+      | 'static' // nilai tidak berubah (default)
+      | 'api_endpoint' // fetch dari URL
+      | 'mcp_tool' // panggil MCP tool
+      | 'user_input' // input dari user saat runtime
+      | 'formula'; // computed dari binding lain
 
-    ref     : string;        // URL, tool name, input ID, atau formula
-    refresh : "once" | "interval" | "on_event" | "reactive";
+    ref: string; // URL, tool name, input ID, atau formula
+    refresh: 'once' | 'interval' | 'on_event' | 'reactive';
     refresh_interval_ms?: number;
     event_trigger?: string;
   };
 
   // Transform pipeline — dijalankan sebelum binding ke target
   transforms: Array<{
-    op    : "filter" | "sort" | "aggregate" | "format" | "map";
+    op: 'filter' | 'sort' | 'aggregate' | 'format' | 'map';
     params: Record<string, unknown>;
   }>;
 
   // Fallback jika source unavailable
   fallback_value?: unknown;
-  error_behavior : "use_fallback" | "hide_object" | "show_error";
+  error_behavior: 'use_fallback' | 'hide_object' | 'show_error';
 }
 ```
 
@@ -467,7 +511,7 @@ interface IRInteractionModel {
 }
 
 interface IRStateMachine {
-  object_id : string;
+  object_id: string;
 
   // Semua state yang mungkin
   states: Record<string, IRStateProperties>;
@@ -487,35 +531,36 @@ interface IRStateProperties {
 }
 
 interface IRStateTransition {
-  from      : string;         // state name atau "*" untuk any
-  to        : string;         // state name
-  trigger   : InteractionTrigger;
-  condition?: string;         // DSL expression, e.g. "store.count > 0"
-  animation?: IRTransition;   // animasi selama transisi
+  from: string; // state name atau "*" untuk any
+  to: string; // state name
+  trigger: InteractionTrigger;
+  condition?: string; // DSL expression, e.g. "store.count > 0"
+  animation?: IRTransition; // animasi selama transisi
 
   // Side effects
   actions: IRAction[];
 }
 
 type InteractionTrigger =
-  | { type: "click" }
-  | { type: "hover_enter" | "hover_leave" }
-  | { type: "focus" | "blur" }
-  | { type: "drag_start" | "drag_end" }
-  | { type: "swipe"; direction: "left" | "right" | "up" | "down" }
-  | { type: "key_press"; key: string }
-  | { type: "timer"; delay_ms: number }
-  | { type: "data_change"; binding_id: string }
-  | { type: "custom"; event_name: string };
+  | { type: 'click' }
+  | { type: 'hover_enter' | 'hover_leave' }
+  | { type: 'focus' | 'blur' }
+  | { type: 'drag_start' | 'drag_end' }
+  | { type: 'swipe'; direction: 'left' | 'right' | 'up' | 'down' }
+  | { type: 'key_press'; key: string }
+  | { type: 'timer'; delay_ms: number }
+  | { type: 'data_change'; binding_id: string }
+  | { type: 'custom'; event_name: string };
 
 interface IRAction {
-  type    : "mutate_store"    // ubah nilai di global store
-          | "navigate"        // navigasi antar frame/halaman
-          | "play_animation"  // trigger animasi
-          | "call_binding"    // refresh data binding
-          | "emit_event"      // emit event ke parent
-          | "call_mcp";       // panggil MCP tool
-  payload : unknown;
+  type:
+    | 'mutate_store' // ubah nilai di global store
+    | 'navigate' // navigasi antar frame/halaman
+    | 'play_animation' // trigger animasi
+    | 'call_binding' // refresh data binding
+    | 'emit_event' // emit event ke parent
+    | 'call_mcp'; // panggil MCP tool
+  payload: unknown;
 }
 ```
 
@@ -533,23 +578,23 @@ interface IRDependencyGraph {
 }
 
 interface IRDependency {
-  ir_id    : string;
-  version  : string;        // semver — pinned untuk reproducibility
-  reason   : "component_ref" | "brand_profile" | "shared_asset"
-           | "data_source" | "style_library";
+  ir_id: string;
+  version: string; // semver — pinned untuk reproducibility
+  reason: 'component_ref' | 'brand_profile' | 'shared_asset' | 'data_source' | 'style_library';
 
   // Isolation policy
-  isolation: "pinned"       // tidak pernah auto-update
-           | "latest_patch" // auto-update patch (x.x.PATCH)
-           | "latest_minor" // auto-update minor (x.MINOR.x)
-           | "latest";      // selalu latest (hanya untuk development)
+  isolation:
+    | 'pinned' // tidak pernah auto-update
+    | 'latest_patch' // auto-update patch (x.x.PATCH)
+    | 'latest_minor' // auto-update minor (x.MINOR.x)
+    | 'latest'; // selalu latest (hanya untuk development)
 }
 
 // Reference ke component dari IR lain
 interface IRComponentRef {
-  ir_id    : string;        // IR document yang punya component
-  component_id: string;     // export name dari IR tersebut
-  version  : string;
+  ir_id: string; // IR document yang punya component
+  component_id: string; // export name dari IR tersebut
+  version: string;
 
   // Override subset property — composition, bukan inheritance
   prop_overrides?: Partial<NodeProperties>;
@@ -566,37 +611,36 @@ domain tapi belum ada di Genesis.
 interface IRPhysicalSpec {
   // Dimensi fisik
   dimensions: {
-    width : number;
+    width: number;
     height: number;
-    depth?: number;    // untuk packaging 3D
-    unit  : "mm" | "cm" | "in" | "pt";
+    depth?: number; // untuk packaging 3D
+    unit: 'mm' | 'cm' | 'in' | 'pt';
   };
 
   // Area cetak
-  bleed_mm    : number;    // area lebih untuk cetak (biasanya 3mm)
-  safe_zone_mm: number;    // minimum dari tepi untuk konten penting
-  margin_mm   : number;    // margin dalam dokumen
+  bleed_mm: number; // area lebih untuk cetak (biasanya 3mm)
+  safe_zone_mm: number; // minimum dari tepi untuk konten penting
+  margin_mm: number; // margin dalam dokumen
 
   // Output specification
-  dpi         : number;    // 300 untuk print, 150 untuk large format
-  color_profile: "sRGB" | "CMYK" | "PantoneU" | "PantoneC" | "PantoneM";
-  substrate   : "coated" | "uncoated" | "canvas" | "vinyl" | "kraft"
-             | "recycled" | "metallic";
+  dpi: number; // 300 untuk print, 150 untuk large format
+  color_profile: 'sRGB' | 'CMYK' | 'PantoneU' | 'PantoneC' | 'PantoneM';
+  substrate: 'coated' | 'uncoated' | 'canvas' | 'vinyl' | 'kraft' | 'recycled' | 'metallic';
 
   // Production marks
   production_marks: {
-    fold_lines     : IRLine[];    // untuk packaging
-    cut_lines      : IRLine[];    // untuk die-cut
-    perforation    : IRLine[];
-    score_lines    : IRLine[];
+    fold_lines: IRLine[]; // untuk packaging
+    cut_lines: IRLine[]; // untuk die-cut
+    perforation: IRLine[];
+    score_lines: IRLine[];
   };
 
   // Special finishing
   finishing: {
-    spot_uv_areas  : IRArea[];   // area UV coating
-    emboss_areas   : IRArea[];   // area emboss/deboss
-    foil_areas     : IRArea[];   // area foil stamping
-    varnish_areas  : IRArea[];
+    spot_uv_areas: IRArea[]; // area UV coating
+    emboss_areas: IRArea[]; // area emboss/deboss
+    foil_areas: IRArea[]; // area foil stamping
+    varnish_areas: IRArea[];
   };
 
   // Pantone color mapping (digital → fisik)
@@ -690,14 +734,14 @@ OUTPUT: Rendered output + trace_id + RLVR reward signals
 // Hanya aktif di development / debug session
 
 interface IRDebugAnnotations {
-  compiled_at    : string;
-  compilation_ms : number;
+  compiled_at: string;
+  compilation_ms: number;
 
   // Per-node trace
   nodes: Record<string, NodeDebugTrace>;
 
   // Pass durations
-  pass_durations : Record<string, number>;
+  pass_durations: Record<string, number>;
 }
 
 interface NodeDebugTrace {
@@ -705,26 +749,31 @@ interface NodeDebugTrace {
 
   // Dari mana nilai setiap property berasal (Style Cascade)
   style_resolution_trace: Array<{
-    property    : string;
-    final_value : unknown;
-    source      : "direct" | "style_override" | "component_style"
-                | "theme_token" | "brand_token" | "constraint_override";
-    source_ref  : string;
+    property: string;
+    final_value: unknown;
+    source:
+      | 'direct'
+      | 'style_override'
+      | 'component_style'
+      | 'theme_token'
+      | 'brand_token'
+      | 'constraint_override';
+    source_ref: string;
   }>;
 
   // Mengapa renderer X dipilih
   renderer_decision_trace: {
-    candidates_evaluated : string[];
-    selected             : string;
-    selection_reason     : string;
+    candidates_evaluated: string[];
+    selected: string;
+    selection_reason: string;
   };
 
   // Hasil evaluasi setiap semantic rule
   constraint_check_trace: Array<{
-    rule_id       : string;
-    passed        : boolean;
-    evaluated_to  : unknown;
-    auto_fixed    : boolean;
+    rule_id: string;
+    passed: boolean;
+    evaluated_to: unknown;
+    auto_fixed: boolean;
   }>;
 }
 ```
@@ -759,9 +808,9 @@ versioning untuk DSL semantic itu sendiri:
 
 ```typescript
 interface DSLGrammarVersion {
-  version        : string;    // semver
+  version: string; // semver
   domains_covered: IRDomain[];
-  semantic_scope : string[];  // konsep yang di-cover
+  semantic_scope: string[]; // konsep yang di-cover
 
   // Apa yang berubah dari versi sebelumnya
   changelog: string;
@@ -769,10 +818,10 @@ interface DSLGrammarVersion {
   // Regression test: intent yang sama harus menghasilkan
   // IR yang semantically equivalent antar versi
   regression_prompts: Array<{
-    intent         : string;
-    expected_props : string[];   // property yang harus ada di output
-    version_added  : string;
-    invariant      : "must_have" | "must_not_have" | "value_range";
+    intent: string;
+    expected_props: string[]; // property yang harus ada di output
+    version_added: string;
+    invariant: 'must_have' | 'must_not_have' | 'value_range';
   }>;
 }
 ```
@@ -834,8 +883,8 @@ interactive    │ ✅      │ ✅      │ optional│ —       │ ✅
 
 ---
 
-*Spesifikasi ini adalah sintesis dari:*
-*Domain Analysis (Visual Design & Multimedia) · IR Strategy Discussion ·*
-*Genesis Design Document v1.0 · Gap Analysis & Additional Considerations*
-*Total domain: 11 · Total IR layer: 3 · Total compilation pass: 7*
-*Total keputusan tidak bisa diulang (IR-specific): 8*
+_Spesifikasi ini adalah sintesis dari:_
+_Domain Analysis (Visual Design & Multimedia) · IR Strategy Discussion ·_
+_Genesis Design Document v1.0 · Gap Analysis & Additional Considerations_
+_Total domain: 11 · Total IR layer: 3 · Total compilation pass: 7_
+_Total keputusan tidak bisa diulang (IR-specific): 8_

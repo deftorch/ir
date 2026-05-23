@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ir-dsl.org/schemas/constraint_set.json",
+  "title": "IRConstraintSet",
+  "type": "object",
+  "properties": {
+    "brand_profile_id": { "type": "string" },
+    "wcag_level": { "type": "string", "enum": ["A", "AA", "AAA"] },
+    "c2pa_required": { "type": "boolean" },
+    "max_file_size_kb": { "type": "number" },
+    "max_objects": { "type": "number" },
+    "semantic_rules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "scope": { "type": "string", "enum": ["object", "parent_child", "siblings", "document"] },
+          "condition": { "type": "string" },
+          "violation": { "type": "string", "enum": ["error", "warning", "info"] },
+          "message": { "type": "string" },
+          "auto_fix": { "type": "string" }
+        },
+        "required": ["id", "scope", "condition", "violation", "message"],
+        "additionalProperties": false
+      }
+    },
+    "layout_constraints": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "type": {
+            "type": "string",
+            "enum": ["pin", "align", "distribute", "aspect_ratio", "min_size"]
+          },
+          "targets": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "params": { "type": "object" }
+        },
+        "required": ["id", "type", "targets", "params"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": ["semantic_rules", "layout_constraints"],
+  "additionalProperties": false
+}

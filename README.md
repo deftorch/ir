@@ -1,9 +1,11 @@
 # IR Visual Design & Multimedia DSL
 
 ## Project Overview
+
 IR (Intermediate Representation) is a formal contract for visual design, multimedia, and cross-domain interaction (web, print, video, etc). IR serves as the single source of truth for all surfaces, with a multi-level architecture (HIR, MIR, LIR) and a structured compilation pipeline.
 
 ## Key Features
+
 - Supports 11 domains: visual, video, audio, print, interactive, and more
 - Style system & brand token cascade (object > component > theme)
 - Constraint & semantic validation (WCAG, brand, etc.)
@@ -12,6 +14,7 @@ IR (Intermediate Representation) is a formal contract for visual design, multime
 - Output: Web (HTML/CSS/JS), Print (PDF), Video (FFmpeg), and more
 
 ## IR Architecture
+
 ```
 DSL Source (Natural Language / Code / Canvas Action)
              ↓
@@ -25,7 +28,9 @@ Backends: Web · Print · Video · Mobile · Audio
 ```
 
 ## Implementation Status
+
 See [ir-implementation-plan.md](ir-implementation-plan.md) for the detailed roadmap.
+
 - Phase 1: Foundation & Core Schema (in progress)
 - Phase 2: Style System & Brand Tokens
 - Phase 3: Constraint & Semantic Validation
@@ -33,6 +38,7 @@ See [ir-implementation-plan.md](ir-implementation-plan.md) for the detailed road
 - ...
 
 ## Monorepo Structure
+
 ```
 /packages
   ├── ir-schema         # JSON Schema & TypeScript types
@@ -41,6 +47,7 @@ See [ir-implementation-plan.md](ir-implementation-plan.md) for the detailed road
 ```
 
 ## Getting Started
+
 1. Ensure Node.js & pnpm/yarn/npm are installed
 2. Enter the `packages/ir-schema` folder and install dependencies
    ```bash
@@ -53,6 +60,7 @@ See [ir-implementation-plan.md](ir-implementation-plan.md) for the detailed road
    ```
 
 ## Example IRDocument (Minimal)
+
 ```json
 {
   "meta": {
@@ -77,15 +85,18 @@ See [ir-implementation-plan.md](ir-implementation-plan.md) for the detailed road
 ```
 
 ## Stability Contract & Critical Decisions
+
 - STABLE fields cannot be breaking-changed without a major version bump
 - Cascade order: object > component > theme (cannot be changed)
 - See [ir-specification.md](ir-specification.md) for details
 
 ## Contribution
+
 - Follow the style guide & run tests before PR
 - Add new domains/features according to the roadmap & discussion
 
 ## License
+
 (Add license here)
 
 ---

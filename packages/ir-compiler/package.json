@@ -1,19 +1,20 @@
 {
-  "name": "ir-schema",
+  "name": "ir-compiler",
   "version": "0.1.0",
-  "description": "JSON Schema & TypeScript types for IR Visual Design & Multimedia DSL",
+  "description": "Compiler and storage layers for IR Visual Design & Multimedia DSL",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc -b",
     "test": "vitest run"
   },
-  "keywords": ["ir", "schema", "visual", "design", "dsl"],
+  "keywords": ["ir", "compiler", "validation", "dsl"],
   "author": "deftorch",
   "license": "MIT",
   "dependencies": {
     "ajv": "^8.0.0",
-    "ajv-formats": "^2.1.1"
+    "ajv-formats": "^2.1.1",
+    "ir-schema": "^0.1.0"
   },
   "devDependencies": {
     "typescript": "^5.0.0"

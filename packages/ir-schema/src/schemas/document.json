@@ -1,0 +1,162 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ir-dsl.org/schemas/document.json",
+  "title": "IRDocument",
+  "type": "object",
+  "properties": {
+    "meta": {
+      "type": "object",
+      "properties": {
+        "schema_version": { "type": "string", "enum": ["2.0"] },
+        "ir_version": { "type": "string" },
+        "ir_id": { "type": "string", "format": "uuid" },
+        "created_at": { "type": "string", "format": "date-time" },
+        "created_by": { "type": "string", "enum": ["human", "ai_agent", "fork", "import"] },
+        "domain": {
+          "type": "string",
+          "enum": [
+            "visual",
+            "image_edit",
+            "video",
+            "audio",
+            "motion",
+            "print",
+            "signage",
+            "packaging",
+            "data_viz",
+            "interactive",
+            "3d"
+          ]
+        },
+        "session_id": { "type": "string" },
+        "parent_ir_id": { "type": "string", "format": "uuid" },
+        "component_id": { "type": "string" }
+      },
+      "required": [
+        "schema_version",
+        "ir_version",
+        "ir_id",
+        "created_at",
+        "created_by",
+        "domain",
+        "session_id"
+      ],
+      "additionalProperties": false
+    },
+    "canvas": {
+      "$ref": "https://ir-dsl.org/schemas/canvas.json"
+    },
+    "style_context": {
+      "type": "object",
+      "properties": {
+        "theme_tokens": {
+          "type": "object",
+          "properties": {
+            "colors": {
+              "type": "object",
+              "additionalProperties": {
+                "oneOf": [
+                  { "type": "string" },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "r": { "type": "number", "minimum": 0, "maximum": 255 },
+                      "g": { "type": "number", "minimum": 0, "maximum": 255 },
+                      "b": { "type": "number", "minimum": 0, "maximum": 255 },
+                      "a": { "type": "number", "minimum": 0, "maximum": 1 }
+                    },
+                    "required": ["r", "g", "b", "a"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "c": { "type": "number", "minimum": 0, "maximum": 100 },
+                      "m": { "type": "number", "minimum": 0, "maximum": 100 },
+                      "y": { "type": "number", "minimum": 0, "maximum": 100 },
+                      "k": { "type": "number", "minimum": 0, "maximum": 100 }
+                    },
+                    "required": ["c", "m", "y", "k"],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            },
+            "typography": {
+              "type": "object",
+              "properties": {
+                "families": { "type": "object", "additionalProperties": { "type": "string" } },
+                "sizes": { "type": "object", "additionalProperties": { "type": "number" } },
+                "weights": { "type": "object", "additionalProperties": { "type": "number" } },
+                "line_heights": { "type": "object", "additionalProperties": { "type": "number" } },
+                "spacings": { "type": "object", "additionalProperties": { "type": "number" } }
+              },
+              "required": ["families", "sizes", "weights", "line_heights", "spacings"],
+              "additionalProperties": false
+            },
+            "spacing": { "type": "object", "additionalProperties": { "type": "number" } },
+            "radii": { "type": "object", "additionalProperties": { "type": "number" } },
+            "shadows": {
+              "type": "object",
+              "additionalProperties": { "type": "object" }
+            },
+            "easings": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "type": { "type": "string", "enum": ["cubic_bezier", "spring", "steps"] },
+                  "params": {
+                    "type": "array",
+                    "items": { "type": "number" }
+                  }
+                },
+                "required": ["type", "params"],
+                "additionalProperties": false
+              }
+            },
+            "durations": { "type": "object", "additionalProperties": { "type": "number" } }
+          },
+          "required": [
+            "colors",
+            "typography",
+            "spacing",
+            "radii",
+            "shadows",
+            "easings",
+            "durations"
+          ],
+          "additionalProperties": true
+        },
+        "component_styles": {
+          "type": "object",
+          "additionalProperties": { "type": "object" }
+        },
+        "object_overrides": {
+          "type": "object",
+          "additionalProperties": { "type": "object" }
+        }
+      },
+      "required": ["theme_tokens", "component_styles", "object_overrides"],
+      "additionalProperties": false
+    },
+    "objects": {
+      "type": "array",
+      "items": {
+        "$ref": "https://ir-dsl.org/schemas/node.json"
+      }
+    },
+    "constraints": {
+      "$ref": "https://ir-dsl.org/schemas/constraint_set.json"
+    },
+    "timeline": { "type": "object" },
+    "data_bindings": { "type": "array" },
+    "interaction_model": { "type": "object" },
+    "dependencies": { "type": "object" },
+    "physical": { "type": "object" },
+    "x_debug": { "type": "object" },
+    "x_visual_constraints": { "type": "object" }
+  },
+  "required": ["meta", "canvas", "style_context", "objects", "constraints"],
+  "additionalProperties": false
+}
