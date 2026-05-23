@@ -59,6 +59,13 @@ const doc = createIRDocument({
       position: { x: 100, y: 100, z: 0 },
       size: { width: 600, height: 400 },
       style_ref: 'card-style',
+      media_overrides: {
+        '(max-width: 768px)': {
+          width: 360,
+          position: { x: 10, y: 50 },
+          fill: '#11111b'
+        }
+      },
       children: [
         // Title Text
         createIRNode({
@@ -106,13 +113,18 @@ const doc = createIRDocument({
           size: { width: 370, height: 120 },
           style_override: {
             fill: '#313244',
-            border_radius: 12
+            border_radius: 12,
+            display: 'flex',
+            flex_direction: 'column',
+            justify_content: 'center',
+            align_items: 'center',
+            gap: 8
           },
           children: [
             createIRNode({
               id: 'box-text-1',
               type: 'text',
-              position: { x: 20, y: 20, z: 0 },
+              position: { x: 0, y: 0 },
               size: { width: 'auto', height: 'auto' },
               properties: { content: 'Nested Child Element' },
               style_override: {
@@ -120,6 +132,19 @@ const doc = createIRDocument({
                 font_size: 18,
                 font_weight: '600',
                 fill: '#f5e0dc'
+              }
+            }),
+            createIRNode({
+              id: 'box-text-2',
+              type: 'text',
+              position: { x: 0, y: 0 },
+              size: { width: 'auto', height: 'auto' },
+              properties: { content: 'Sub-item aligned via Flexbox' },
+              style_override: {
+                font_family: 'Inter, system-ui, sans-serif',
+                font_size: 14,
+                font_weight: '400',
+                fill: '#a6adc8'
               }
             })
           ]
@@ -142,6 +167,12 @@ const doc = createIRDocument({
               scale: { x: 0.98, y: 0.98 }
             }
           },
+          media_overrides: {
+            '(max-width: 768px)': {
+              width: 280,
+              position: { x: 40, y: 320 }
+            }
+          },
           children: [
             createIRNode({
               id: 'btn-text',
@@ -154,6 +185,12 @@ const doc = createIRDocument({
                 font_size: 16,
                 font_weight: '700',
                 fill: '#11111b'
+              },
+              media_overrides: {
+                '(max-width: 768px)': {
+                  position: { x: 50, y: 15 },
+                  font_size: 14
+                }
               }
             })
           ]

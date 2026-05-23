@@ -114,6 +114,10 @@
       "additionalProperties": false
     },
     "transition": { "type": "string" },
+    "media_overrides": {
+      "type": "object",
+      "additionalProperties": { "type": "object" }
+    },
     "x_debug_trace": { "type": "object" }
   },
   "required": [

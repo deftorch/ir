@@ -61,6 +61,7 @@ export function createIRNode(params: Partial<IRNode> & { type: IRNodeType }): IR
     style_override: params.style_override,
     states: params.states,
     transition: params.transition,
+    media_overrides: params.media_overrides,
     properties: params.properties ?? {},
     children: params.children,
     component_ref: params.component_ref,

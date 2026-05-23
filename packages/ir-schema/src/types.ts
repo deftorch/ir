@@ -109,6 +109,19 @@ export interface StyleOverride {
   border_width?: number;
   border_radius?: number;
   transition?: string;
+  display?: 'block' | 'flex' | 'grid' | 'inline-block' | 'none';
+  flex_direction?: 'row' | 'column' | 'row-reverse' | 'column-reverse';
+  flex_wrap?: 'nowrap' | 'wrap' | 'wrap-reverse';
+  justify_content?: string;
+  align_items?: string;
+  gap?: number | string;
+  grid_template_columns?: string;
+  grid_template_rows?: string;
+  flex_grow?: number;
+  flex_shrink?: number;
+  flex_basis?: string;
+  align_self?: string;
+  justify_self?: string;
   [key: string]: any;
 }
 
@@ -172,6 +185,7 @@ export interface IRNode {
     active?: StyleOverride;
   };
   transition?: string;
+  media_overrides?: Record<string, StyleOverride>;
   properties: NodeProperties;
   children?: IRNode[];
   component_ref?: IRComponentRef;

@@ -112,17 +112,28 @@ export function generateNodeCss(
   parentLayout: ComputedLayout | undefined,
   resolvedStyle: Record<string, any> = {},
   doc: IRDocument,
-  colorToVarMap?: Map<string, string>
+  colorToVarMap?: Map<string, string>,
+  parentHasFlowLayout?: boolean
 ): string {
   const relX = parentLayout ? layout.x - parentLayout.x : layout.x;
   const relY = parentLayout ? layout.y - parentLayout.y : layout.y;
 
   let css = `#${node.id} {\n`;
-  css += `  position: absolute;\n`;
-  css += `  left: ${relX}px;\n`;
-  css += `  top: ${relY}px;\n`;
-  css += `  width: ${layout.width}px;\n`;
-  css += `  height: ${layout.height}px;\n`;
+  if (!parentHasFlowLayout) {
+    css += `  position: absolute;\n`;
+    css += `  left: ${relX}px;\n`;
+    css += `  top: ${relY}px;\n`;
+    css += `  width: ${layout.width}px;\n`;
+    css += `  height: ${layout.height}px;\n`;
+  } else {
+    // Under flow layout, we only specify width/height if they are not 'auto'
+    if (node.size.width !== 'auto') {
+      css += `  width: ${layout.width}px;\n`;
+    }
+    if (node.size.height !== 'auto') {
+      css += `  height: ${layout.height}px;\n`;
+    }
+  }
   
   if (node.type === 'text') {
     css += `  word-wrap: break-word;\n`;
@@ -162,6 +173,47 @@ export function generateNodeCss(
   const transitionVal = resolvedStyle.transition || node.transition || (node.states ? 'all 0.2s ease' : undefined);
   if (transitionVal) {
     css += `  transition: ${transitionVal};\n`;
+  }
+
+  // Flexbox / Grid layout properties
+  if (resolvedStyle.display) {
+    css += `  display: ${resolvedStyle.display};\n`;
+  }
+  if (resolvedStyle.flex_direction) {
+    css += `  flex-direction: ${resolvedStyle.flex_direction};\n`;
+  }
+  if (resolvedStyle.flex_wrap) {
+    css += `  flex-wrap: ${resolvedStyle.flex_wrap};\n`;
+  }
+  if (resolvedStyle.justify_content) {
+    css += `  justify-content: ${resolvedStyle.justify_content};\n`;
+  }
+  if (resolvedStyle.align_items) {
+    css += `  align-items: ${resolvedStyle.align_items};\n`;
+  }
+  if (resolvedStyle.gap !== undefined) {
+    css += `  gap: ${typeof resolvedStyle.gap === 'number' ? `${resolvedStyle.gap}px` : resolvedStyle.gap};\n`;
+  }
+  if (resolvedStyle.grid_template_columns) {
+    css += `  grid-template-columns: ${resolvedStyle.grid_template_columns};\n`;
+  }
+  if (resolvedStyle.grid_template_rows) {
+    css += `  grid-template-rows: ${resolvedStyle.grid_template_rows};\n`;
+  }
+  if (resolvedStyle.flex_grow !== undefined) {
+    css += `  flex-grow: ${resolvedStyle.flex_grow};\n`;
+  }
+  if (resolvedStyle.flex_shrink !== undefined) {
+    css += `  flex-shrink: ${resolvedStyle.flex_shrink};\n`;
+  }
+  if (resolvedStyle.flex_basis) {
+    css += `  flex-basis: ${resolvedStyle.flex_basis};\n`;
+  }
+  if (resolvedStyle.align_self) {
+    css += `  align-self: ${resolvedStyle.align_self};\n`;
+  }
+  if (resolvedStyle.justify_self) {
+    css += `  justify-self: ${resolvedStyle.justify_self};\n`;
   }
 
   // Determine explicit style styling (to avoid inheriting page/canvas level backgrounds and borders)
@@ -271,18 +323,76 @@ export function renderWeb(
   css += `}\n\n`;
 
   const resolvedStyles = doc.style_context?.resolved || {};
+  const mediaQueriesMap = new Map<string, string>();
 
   const processNodeHtml = (node: IRNode): string => {
     return renderNodeHtml(node, processNodeHtml);
   };
 
-  const processNodeCss = (node: IRNode, parentLayout?: ComputedLayout) => {
+  const processNodeCss = (node: IRNode, parentLayout?: ComputedLayout, parentNode?: IRNode) => {
     const layout = layouts[node.id];
+    const parentStyle = parentNode ? resolvedStyles[parentNode.id] || {} : {};
+    const parentHasFlowLayout = parentStyle.display === 'flex' || parentStyle.display === 'grid';
+
     if (layout) {
-      css += generateNodeCss(node, layout, parentLayout, resolvedStyles[node.id] || {}, doc, colorToVarMap);
+      css += generateNodeCss(node, layout, parentLayout, resolvedStyles[node.id] || {}, doc, colorToVarMap, parentHasFlowLayout);
     }
+
+    // Collect Media Overrides
+    if (node.media_overrides) {
+      for (const [query, styleOverride] of Object.entries(node.media_overrides)) {
+        let queryCss = mediaQueriesMap.get(query) || '';
+        
+        queryCss += `#${node.id} {\n`;
+        if (styleOverride.display) {
+          queryCss += `  display: ${styleOverride.display};\n`;
+        }
+        if (styleOverride.width !== undefined) {
+          queryCss += `  width: ${typeof styleOverride.width === 'number' ? `${styleOverride.width}px` : styleOverride.width};\n`;
+        }
+        if (styleOverride.height !== undefined) {
+          queryCss += `  height: ${typeof styleOverride.height === 'number' ? `${styleOverride.height}px` : styleOverride.height};\n`;
+        }
+        if (styleOverride.position) {
+          if (styleOverride.position.x !== undefined) queryCss += `  left: ${styleOverride.position.x}px;\n`;
+          if (styleOverride.position.y !== undefined) queryCss += `  top: ${styleOverride.position.y}px;\n`;
+        }
+        if (styleOverride.fill) {
+          if (node.type === 'text') {
+            queryCss += `  color: ${cssColor(styleOverride.fill, colorToVarMap)};\n`;
+          } else {
+            queryCss += `  background-color: ${cssColor(styleOverride.fill, colorToVarMap)};\n`;
+          }
+        }
+        if (styleOverride.background_color) {
+          queryCss += `  background-color: ${cssColor(styleOverride.background_color, colorToVarMap)};\n`;
+        }
+        if (node.type !== 'text') {
+          if (styleOverride.stroke) {
+            const w = styleOverride.stroke_width ?? 1;
+            queryCss += `  border: ${w}px solid ${cssColor(styleOverride.stroke, colorToVarMap)};\n`;
+          } else if (styleOverride.border_color) {
+            const w = styleOverride.border_width ?? 1;
+            queryCss += `  border: ${w}px solid ${cssColor(styleOverride.border_color, colorToVarMap)};\n`;
+          }
+        }
+        if (styleOverride.font_size) {
+          queryCss += `  font-size: ${styleOverride.font_size}px;\n`;
+        }
+        if (styleOverride.flex_direction) {
+          queryCss += `  flex-direction: ${styleOverride.flex_direction};\n`;
+        }
+        if (styleOverride.gap !== undefined) {
+          queryCss += `  gap: ${typeof styleOverride.gap === 'number' ? `${styleOverride.gap}px` : styleOverride.gap};\n`;
+        }
+        queryCss += `}\n`;
+        
+        mediaQueriesMap.set(query, queryCss);
+      }
+    }
+
     if (node.children) {
-      node.children.forEach((child) => processNodeCss(child, layout));
+      node.children.forEach((child) => processNodeCss(child, layout, node));
     }
   };
 
@@ -293,6 +403,14 @@ export function renderWeb(
   });
 
   html += `</div>`;
+
+  // Append responsive media query blocks
+  if (mediaQueriesMap.size > 0) {
+    css += `\n/* Responsive Breakpoints */\n`;
+    for (const [query, queryCss] of mediaQueriesMap.entries()) {
+      css += `@media ${query} {\n${queryCss.split('\n').map(line => line ? `  ${line}` : '').join('\n')}}\n`;
+    }
+  }
 
   const fullHtml = `<!DOCTYPE html>
 <html lang="en">
