@@ -1,36 +1,26 @@
-# Spesifikasi IR — Visual Design & Sistem Multimedia DSL
-### Sintesis dari: Domain Analysis · IR Strategy Discussion · Genesis Design Document
+
+# IR Specification — Visual Design & Multimedia System DSL
+### Synthesized from: Domain Analysis · IR Strategy Discussion · Genesis Design Document
 
 ---
 
-## Filosofi & Prinsip Dasar
 
-IR bukan hanya "apa yang harus dirender". IR adalah **kontrak formal** yang
-mendefinisikan semua yang sistem bisa representasikan — konten, kapabilitas,
-constraint, relasi, waktu, interaksi, dan riwayat perubahan.
+## Philosophy & Core Principles
 
-**Lima prinsip fondasi:**
+IR is not just "what to render". IR is a **formal contract** that defines everything the system can represent — content, capabilities, constraints, relationships, time, interaction, and change history.
 
-1. **IR sebagai Sumber Kebenaran Tunggal** — semua surface membaca dan menulis
-   ke IR yang sama. Tidak ada sinkronisasi karena konsistensi adalah properti
-   struktural.
+**Five foundational principles:**
 
-2. **Code over Pixels** — IR adalah kode yang menghasilkan visual. Setiap
-   output dapat diinspeksi, dimodifikasi, di-version, dan di-fork.
-
-3. **Multi-Level, Satu Kontrak** — HIR, MIR, LIR adalah lapisan transformasi
-   dari satu kontrak yang sama. Schema di level HIR adalah ground truth.
-
-4. **Graceful Degradation over Silent Failure** — setiap failure path
-   terdefinisi. IR yang tidak valid tidak pernah sampai ke renderer.
-
-5. **Domain-Aware, Platform-Agnostic** — IR tahu domain (visual, video, audio,
-   print) tapi tidak tahu cara merender. Renderer yang menanggung pengetahuan
-   platform.
+1. **IR as the Single Source of Truth** — all surfaces read and write to the same IR. No synchronization needed because consistency is a structural property.
+2. **Code over Pixels** — IR is code that produces visuals. Every output can be inspected, modified, versioned, and forked.
+3. **Multi-Level, One Contract** — HIR, MIR, LIR are transformation layers of a single contract. The HIR schema is the ground truth.
+4. **Graceful Degradation over Silent Failure** — every failure path is defined. Invalid IR never reaches the renderer.
+5. **Domain-Aware, Platform-Agnostic** — IR knows the domain (visual, video, audio, print) but not how to render. The renderer holds platform knowledge.
 
 ---
 
-## Arsitektur Tiga Level IR
+
+## Three-Level IR Architecture
 
 ```
 DSL Source (Natural Language / Code / Canvas Action)
@@ -39,8 +29,8 @@ DSL Source (Natural Language / Code / Canvas Action)
 │  HIR — High-level IR (Semantic / Intent Level)     │
 │  • Media-agnostic                                   │
 │  • Style-agnostic                                   │
-│  • Deklaratif: "WHAT", bukan "HOW"                 │
-│  • Divalidasi AJV sebelum masuk MIR                │
+│  • Declarative: "WHAT", not "HOW"                  │
+│  • Validated by AJV before entering MIR             │
 └──────────────────────┬─────────────────────────────┘
                        ↓  [Compilation Passes]
 ┌────────────────────────────────────────────────────┐
@@ -67,7 +57,9 @@ DSL Source (Natural Language / Code / Canvas Action)
 
 ---
 
-## HIR — Spesifikasi Schema Lengkap
+
+## HIR — Complete Schema Specification
+
 
 ### 1. IRDocument — Root
 
@@ -77,21 +69,21 @@ interface IRDocument {
   // ── METADATA ─────────────────────────────────────────────────
   meta: {
     schema_version  : "2.0";          // STABLE — frozen
-    ir_version      : string;         // semver dokumen ini
-    ir_id           : string;         // UUID immutable
+    ir_version      : string;         // document semver
+    ir_id           : string;         // immutable UUID
     created_at      : string;         // ISO 8601
     created_by      : "human" | "ai_agent" | "fork" | "import";
     domain          : IRDomain;
     session_id      : string;
-    parent_ir_id?   : string;         // untuk fork dan branching
-    component_id?   : string;         // jika ini adalah IR component library
+    parent_ir_id?   : string;         // for fork and branching
+    component_id?   : string;         // if this is an IR component library
   };
 
   // ── CANVAS ───────────────────────────────────────────────────
   canvas: IRCanvas;
 
   // ── STYLE SYSTEM ─────────────────────────────────────────────
-  // Style cascade — baru, tidak ada di Genesis awal
+  // Style cascade — new, not in Genesis
   style_context: IRStyleContext;
 
   // ── SCENE TREE ───────────────────────────────────────────────
@@ -101,15 +93,15 @@ interface IRDocument {
   constraints: IRConstraintSet;
 
   // ── TEMPORAL MODEL ───────────────────────────────────────────
-  // Hanya untuk domain: video, audio, motion
+  // Only for domain: video, audio, motion
   timeline?: IRTimeline;
 
   // ── RUNTIME BINDINGS ─────────────────────────────────────────
-  // Untuk data-driven content (Genesis Data app)
+  // For data-driven content (Genesis Data app)
   data_bindings?: IRDataBinding[];
 
   // ── INTERACTION MODEL ─────────────────────────────────────────
-  // Untuk interactive content
+  // For interactive content
   interaction_model?: IRInteractionModel;
 
   // ── CROSS-IR REFERENCES ──────────────────────────────────────
@@ -117,7 +109,7 @@ interface IRDocument {
   dependencies?: IRDependencyGraph;
 
   // ── PHYSICAL OUTPUT ──────────────────────────────────────────
-  // Hanya untuk domain: print, signage, packaging
+  // Only for domain: print, signage, packaging
   physical?: IRPhysicalSpec;
 
   // ── EXPERIMENTAL ─────────────────────────────────────────────
@@ -131,10 +123,10 @@ type IRDomain =
   | "video"           // video editing, motion
   | "audio"           // audio design, podcast
   | "motion"          // animation, Lottie, micro-interaction
-  | "print"           // cetak — CMYK, bleed, DPI
+  | "print"           // print — CMYK, bleed, DPI
   | "signage"         // environmental, large format
-  | "packaging"       // kemasan — 3D unfold
-  | "data_viz"        // infografis, chart, dashboard
+  | "packaging"       // packaging — 3D unfold
+  | "data_viz"        // infographics, chart, dashboard
   | "interactive"     // game UI, interactive infographic
   | "3d";             // 3D scene, spatial
 ```
