@@ -4,7 +4,8 @@
   "private": true,
   "description": "Monorepo for IR Visual Design & Multimedia DSL",
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "apps/*"
   ],
   "scripts": {
     "test": "npm test --workspaces --if-present",

@@ -12,8 +12,8 @@
   "author": "deftorch",
   "license": "MIT",
   "dependencies": {
-    "ir-schema": "^0.1.0",
-    "ir-compiler": "^0.1.0"
+    "ir-schema": "workspace:*",
+    "ir-compiler": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.0.0"

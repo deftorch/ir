@@ -1,0 +1,21 @@
+{
+  "name": "showcase",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "ir-schema": "workspace:*",
+    "ir-compiler": "workspace:*",
+    "ir-renderer-web": "workspace:*",
+    "ir-renderer-framework": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "~5.0.0",
+    "vite": "^8.0.12"
+  }
+}
