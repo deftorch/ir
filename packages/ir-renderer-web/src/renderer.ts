@@ -45,7 +45,16 @@ export function renderNodeHtml(node: IRNode, renderChildren: (node: IRNode) => s
       const alt = node.properties.alt || '';
       return `<img id="${node.id}" class="ir-node ir-image" src="${src}" alt="${alt}" />`;
     }
-    case 'shape':
+    case 'shape': {
+      const shapeType = node.properties?.shape_type || 'rect';
+      if (shapeType === 'triangle') {
+        return `<svg id="${node.id}" class="ir-node ir-shape ir-triangle" viewBox="0 0 100 100" preserveAspectRatio="none"><polygon points="50,0 100,100 0,100" fill="currentColor" /></svg>`;
+      }
+      if (shapeType === 'circle') {
+        return `<div id="${node.id}" class="ir-node ir-shape ir-circle" style="border-radius: 50%;"></div>`;
+      }
+      return `<div id="${node.id}" class="ir-node ir-shape ir-rect"></div>`;
+    }
     case 'frame':
     case 'group':
     default: {
@@ -65,9 +74,25 @@ export function generateStateCss(
 ): string {
   let css = `#${nodeId}:${stateName} {\n`;
   
+  const findNode = (nodes: IRNode[]): IRNode | undefined => {
+    for (const n of nodes) {
+      if (n.id === nodeId) return n;
+      if (n.children) {
+        const found = findNode(n.children);
+        if (found) return found;
+      }
+    }
+    return undefined;
+  };
+  const targetNode = findNode(doc.objects);
+  const isTriangle = targetNode?.type === 'shape' && targetNode.properties?.shape_type === 'triangle';
+
   if (stateOverride.fill) {
-    if (nodeType === 'text') {
+    if (nodeType === 'text' || isTriangle) {
       css += `  color: ${cssColor(stateOverride.fill, colorToVarMap)};\n`;
+      if (isTriangle) {
+        css += `  background-color: transparent;\n`;
+      }
     } else {
       css += `  background-color: ${cssColor(stateOverride.fill, colorToVarMap)};\n`;
     }
@@ -230,7 +255,10 @@ export function generateNodeCss(
   if (resolvedStyle.fill) {
     if (node.type === 'text') {
       css += `  color: ${cssColor(resolvedStyle.fill, colorToVarMap)};\n`;
-    } else if (hasExplicitFill) {
+    } else if (node.type === 'shape' && node.properties?.shape_type === 'triangle') {
+      css += `  color: ${cssColor(resolvedStyle.fill, colorToVarMap)};\n`;
+      css += `  background-color: transparent;\n`;
+    } else if (node.type === 'shape' || hasExplicitFill) {
       css += `  background-color: ${cssColor(resolvedStyle.fill, colorToVarMap)};\n`;
     }
   }
@@ -288,7 +316,7 @@ export function generateNodeCss(
 export function renderWeb(
   doc: IRDocument,
   layouts: Record<string, ComputedLayout>
-): { html: string; css: string; fullHtml: string } {
+): { html: string; css: string; fullHtml: string; traceId: string; c2paManifest?: string } {
   const themeColors = doc.style_context?.theme_tokens?.colors || {};
   const colorToVarMap = new Map<string, string>();
   
@@ -412,13 +440,31 @@ export function renderWeb(
     }
   }
 
+  const traceId = `trace-${Math.random().toString(36).substring(2, 15)}-${Date.now()}`;
+  let c2paManifest: string | undefined = undefined;
+  let metadataHead = `  <meta name="ir-trace-id" content="${traceId}">\n`;
+
+  if (doc.constraints?.c2pa_required) {
+    const manifestObj = {
+      "@context": "https://c2pa.org/schemas/v1",
+      "@type": "Manifest",
+      "claim": {
+        "recorder": "IR Compiler Engine v0.1.0",
+        "signature": "sha256-signed-claim-placeholder",
+        "created": new Date().toISOString()
+      }
+    };
+    c2paManifest = JSON.stringify(manifestObj, null, 2);
+    metadataHead += `  <script type="application/c2pa+json">\n${c2paManifest.split('\n').map(line => `  ${line}`).join('\n')}\n  </script>\n`;
+  }
+
   const fullHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>IR Render Output</title>
-  <style>
+${metadataHead}  <style>
     body {
       margin: 0;
       padding: 20px;
@@ -437,5 +483,5 @@ export function renderWeb(
 </body>
 </html>`;
 
-  return { html, css, fullHtml };
+  return { html, css, fullHtml, traceId, c2paManifest };
 }

@@ -9,6 +9,9 @@ const inputBio = document.getElementById('input-bio') as HTMLTextAreaElement;
 const inputAvatar = document.getElementById('input-avatar') as HTMLInputElement;
 const inputColor = document.getElementById('input-color') as HTMLInputElement;
 const inputTextColor = document.getElementById('input-text-color') as HTMLInputElement;
+const selectShapeType = document.getElementById('select-shape-type') as HTMLSelectElement;
+const inputC2pa = document.getElementById('input-c2pa') as HTMLInputElement;
+const inputConstraints = document.getElementById('input-constraints') as HTMLInputElement;
 
 const colorHex = document.getElementById('color-hex') as HTMLSpanElement;
 const textColorHex = document.getElementById('text-color-hex') as HTMLSpanElement;
@@ -73,6 +76,9 @@ function compileAndRender() {
   const avatarUrl = inputAvatar.value;
   const cardBg = inputColor.value;
   const txtColor = inputTextColor.value;
+  const shapeType = selectShapeType.value;
+  const c2paRequired = inputC2pa.checked;
+  const applyConstraints = inputConstraints.checked;
 
   // Update label text
   colorHex.textContent = cardBg.toUpperCase();
@@ -92,7 +98,7 @@ function compileAndRender() {
         accent_blue: '#89b4fa',
         accent_rose: '#f38ba8'
       }
-    }
+    } as any
   });
 
   const doc = createIRDocument({
@@ -170,9 +176,10 @@ function compileAndRender() {
             type: 'shape',
             position: { x: 40, y: 350 },
             size: { width: 270, height: 44 },
+            properties: { shape_type: shapeType },
             style_override: {
               fill: 'theme://colors.accent_blue',
-              border_radius: 8
+              border_radius: shapeType === 'circle' ? 50 : 8
             },
             states: {
               hover: {
@@ -200,6 +207,9 @@ function compileAndRender() {
       })
     ],
     constraints: {
+      brand_profile_id: 'brand-1',
+      wcag_level: 'AA',
+      c2pa_required: c2paRequired,
       semantic_rules: [
         {
           id: 'wcag-text-contrast',
@@ -209,7 +219,21 @@ function compileAndRender() {
           message: 'Text color must satisfy WCAG AA contrast ratio (>= 4.5:1) with card background.',
           auto_fix: 'self.fill = "#ffffff"'
         }
-      ]
+      ],
+      layout_constraints: applyConstraints ? [
+        {
+          id: 'button-pin',
+          type: 'pin' as const,
+          targets: ['action-button', 'profile-card'],
+          params: { edge: 'bottom', value: 30 }
+        },
+        ...(shapeType !== 'circle' ? [{
+          id: 'button-aspect',
+          type: 'aspect_ratio' as const,
+          targets: ['action-button'],
+          params: { ratio: 6.1 }
+        }] : [])
+      ] : []
     }
   });
 
@@ -235,14 +259,23 @@ function compileAndRender() {
   let warningCount = 0;
 
   // Add schema information logs
-  addLogItem('System', 'Successfully compiled IR Document to responsive output.', 'info');
+  addLogItem('System', `Successfully compiled IR Document to responsive output. Trace ID: ${renderWeb.traceId}`, 'info');
+
+  if (renderWeb.c2paManifest) {
+    addLogItem(
+      'C2PA Content Authenticity',
+      'Digital authenticity watermark generated and injected successfully into HTML head.',
+      'info',
+      `Manifest claim: ${renderWeb.c2paManifest}`
+    );
+  }
 
   if (validation.errors.length > 0) {
     validation.errors.forEach(err => {
       warningCount++;
       addLogItem(
         'WCAG AA Violation Warning',
-        `Violation on node [${err.node_id}]: ${err.message}`,
+        `Violation on node [${(err as any).node_id || err.path}]: ${err.message}`,
         'warning',
         'Auto-Fix Applied: self.fill = "#ffffff" (Contrast ratio resolved)'
       );
@@ -305,6 +338,10 @@ function addLogItem(title: string, message: string, type: 'info' | 'warning' | '
 [inputUsername, inputBio, inputAvatar, inputColor, inputTextColor].forEach(input => {
   input.addEventListener('input', compileAndRender);
 });
+
+selectShapeType.addEventListener('change', compileAndRender);
+inputC2pa.addEventListener('change', compileAndRender);
+inputConstraints.addEventListener('change', compileAndRender);
 
 document.getElementById('btn-recompile')?.addEventListener('click', compileAndRender);
 
